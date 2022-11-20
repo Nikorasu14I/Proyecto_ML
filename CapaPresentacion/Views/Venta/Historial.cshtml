@@ -1,0 +1,309 @@
+﻿@section scripts{
+    <script>
+        var TablaAlmacen;
+        var Tabla_S;
+        var Metodo = "Efectivo";
+        var Codigo;
+        var Debido;
+        var Contador = 0;
+        $(document).ready(function () {
+            TablaAlmacen = $('#tbalmacen').DataTable({
+                "ajax": {
+                    "url": "@Url.Action("listarDeuda", "Servicio")",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "ID_Servicio" },
+                    { "data": "Descripcion" },
+                    { "data": "Cantidad" },
+                    { "data": "Estado" },
+                    { "data": "Precio" },
+                    { "data": "Categoria" }
+                ],
+                "language": {
+                    url: "https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json"
+                },
+
+                dom: 'Bfrtip',
+                buttons: [
+                    'excel',
+                    'print'
+                ]
+            });
+
+            $('#tbalmacen tbody').on('dblclick', 'tr', function () {
+                Codigo = $(this).children().eq('0').text();
+                Debido = $(this).children().eq('3').text();
+                Recibo();
+
+            });
+
+        });
+
+       
+        function AbrirModal()
+        {
+            $('#TI').val(Debido);
+            $('#ID_Evento').val(Codigo);
+            $('#Monto').val("");
+            $('#Modal').modal('hide');
+            $('#ModalRecibo').modal('show');
+            $('#Smetodo').change(function () {
+                if ($(this).val() === "Cheque") {
+                    Metodo = "Cheque";
+                    var x = document.getElementById("Cheque");
+                    x.style.display = "block";
+                    var x = document.getElementById("Metodos");
+                    x.style.display = "none";
+                    $('#Efectivo').val(0.00);
+                    $('#PCheque').val(0.00);
+                } else if ($(this).val() === "EC") {
+                    Metodo = "T/C";
+                    var x = document.getElementById("Cheque");
+                    x.style.display = "block";
+                    var x = document.getElementById("Metodos");
+                    x.style.display = "block";
+                } else if ($(this).val() === "Efectivo"){
+                    Metodo = "Efectivo";
+                    $('#Efectivo').val(0.00);
+                    $('#PCheque').val(0.00);
+                    var x = document.getElementById("Cheque");
+                    x.style.display = "none";
+                    var x = document.getElementById("Metodos");
+                    x.style.display = "none";
+                }
+            });
+
+        }
+
+        function Recibo()
+        {
+            if (Contador == 0)
+            {
+                Contador = 1;
+                Tabla_S = $('#tbr').DataTable({
+                    "ajax": {
+                        "url": "@Url.Action("listarRecibo", "Servicio")" + "?ID=" + Codigo,
+                        "type": "GET",
+                        "datatype": "json"
+                    },
+                    "columns": [
+                        { "data": "ID_Recibo" },
+                        { "data": "Fecha" },
+                        { "data": "Nombre" },
+                        { "data": "Forma" },
+                        { "data": "Monto" }
+                    ],
+                    dom: 'Bfrtip',
+                    buttons: [
+                        {
+                            text: 'Agregar Nuevo',
+                            attr: { class: 'btn btn-success btn-sm' },
+                            action: function (e, dt, node, config) {
+                                AbrirModal()
+                            }
+                        }
+                    ],
+                });
+
+                $('#tbr tbody').on('dblclick', 'tr', function () {
+
+                    var CodigoR = $(this).children().eq('0').text();
+                    var caracteristicas = "height=600,width=800,scrollTo,resizable=1,scrollbars=1,location=0";
+                    nueva = window.open("/Servicio/Recibo?ID=" + parseInt(CodigoR), 'popup', caracteristicas);
+
+                });
+            }
+            else
+            {
+                Tabla_S.ajax.reload();
+            }
+            $('#Modal').modal('show');
+        }
+
+        function Guardar()
+        {
+            if (parseFloat($("#Monto").val()) > (parseFloat($("#TI").val())) ) {
+                swal("Mensaje", "El monto no debe ser mayor al saldo", "error");
+                return;
+            }
+
+            if (Metodo == "Efectivo y Cheque" && parseFloat($("#Monto").val()) != (parseFloat($('#PCheque').val()) + parseFloat($('#PEfec').val()))) {
+                swal("Mensaje", "El Monto debe sumar lo mismo que el adelanto", "error");
+                return;
+            }
+
+            Monto = $('#Monto').val();
+            if (Metodo == "Efectivo") {
+                Efectivo = $('#Monto').val();
+                Cheque = 0;
+            } else if (Metodo == "Cheque") {
+                Cheque = $('#Monto').val();
+                Efectivo = 0;
+            }
+            else if (Metodo == "T/C"){
+                Efectivo = $('#PEfec').val();
+                Cheque = $('#PCheque').val();
+            }
+            var f = new Date();
+            var Fecha = (f.getFullYear() + "/" + (f.getMonth() + 1) + "/" + f.getDate());
+
+            var $data = {
+
+                ORecibo: {
+                    ID_Evento: parseInt(Codigo),
+                    Monto: $("#Monto").val(),
+                    Forma: Metodo,
+                    Fecha: Fecha,
+                    Banco: $("#Banco").val(),
+                    Cheque: Cheque,
+                    Efectivo: Efectivo,
+                    Concepto: $("#Concepto").val()
+                }
+            }
+
+            jQuery.ajax({
+                url: "@Url.Action("GuardarRecibo", "Servicio")",
+                type: "POST",
+                data: JSON.stringify($data),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    TablaAlmacen.ajax.reload();
+                    $('#ModalRecibo').modal('hide');
+                    var caracteristicas = "height=600,width=800,scrollTo,resizable=1,scrollbars=1,location=0";
+                    nueva = window.open("/Servicio/Recibo?ID=" + data, '_blank');
+
+                },
+                error: function (error) {
+                    console.log(error)
+                },
+                beforeSend: function () {
+                }
+            });
+        }
+    </script>        
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Almacen</title>
+</head>
+<body>
+
+    <div class="row m-4">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    REGISTRO DEUDAS
+                </div>
+                <div class="card-body">
+                    <table class="hover" id="tbalmacen" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><font color="blue">ID Evento</font></th>
+                                <th><font color="blue">Nombre</font></th>
+                                <th><font color="blue">Pagado</font></th>
+                                <th><font color="blue">Debido</font></th>
+                                <th><font color="blue">Total</font></th>
+                                <th><font color="blue">Estado</font></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ModalRecibo" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 700px!important;" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <input type="hidden" id="ID_Evento">
+                                <label for="Nombre">Debido:</label>
+                                <input type="text" class="form-control" id="TI">
+                                <label for="Nombre">Monto:</label>
+                                <input type="text" class="form-control" id="Monto">
+                            </div>
+                            <div class="form-group">
+                                <label for="Concepto">Metodo de Pago:</label>
+                                <select class="form-control" id="Smetodo">
+                                    <option value="Efectivo">En Efectivo</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="EC">Efectivo y Cheque</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="Cheque" style="display: none">
+                                <label for="Banco">Banco:</label>
+                                <input type="text" class="form-control" id="Banco" value="">
+                            </div>
+
+                            <div class="form-group" id="Metodos" style="display: none">
+                                <label for="Efectivo">Pago en efectivo:</label>
+                                <input type="text" class="form-control" id="PEfec" value="0">
+                                <label for="PCheque">Pago con cheque:</label>
+                                <input type="text" class="form-control" id="PCheque" value="0">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Concepto">En concepto de:</label>
+                                <input type="text" class="form-control" id="Concepto">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-lg" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="Guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="Modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 1350px!important;" role="document">
+            <div class="modal-content">
+
+                <div class="modal-body">
+
+                    <div class="row m-4">
+                        <div class="col-sm-12">
+                            <div class="card">
+                              
+                                <div class="card-body">
+                                    <table class="hover" id="tbr" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th><font color="blue">ID Recibo</font></th>
+                                                <th><font color="blue">Fecha</font></th>
+                                                <th><font color="blue">Nombre</font></th>
+                                                <th><font color="blue">Forma de Pago</font></th>
+                                                <th><font color="blue">Monto</font></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>

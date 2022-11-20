@@ -1,0 +1,193 @@
+﻿@{
+    ViewBag.Title = "Empleado";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+@section scripts{
+
+    <script>
+        var Tabla_Almacen;
+        var Cargo = 4;
+        $(document).ready(function () {
+              Tabla_Almacen = $('#tbalmacen').DataTable({
+                "ajax": {
+                    "url": "@Url.Action("listarT", "Servicio")",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "ID_Servicio" },
+                    { "data": "Descripcion" },
+                    { "data": "Precio" },
+                    { "data": "Categoria" },
+                    { "data": "Cantidad" }
+                ],
+                  "language": {
+                      url: "https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json"
+                  },
+
+                  dom: 'Bfrtip',
+                  buttons: [
+                      {
+                          text: 'Agregar Nuevo',
+                          attr: { class: 'btn btn-primary btn-sm' },
+                          action: function (e, dt, node, config) {
+                              AbrirModal(0)
+                          }
+                      }, "print", "excel"
+                  ]
+              });
+            $('#tbalmacen tbody').on('dblclick', 'tr', function () {
+                var Cliente = {};
+                Cliente.ID = $(this).children().eq('0').text();
+                Cliente.Descripcion = $(this).children().eq('1').text();
+                Cliente.Precio = $(this).children().eq('2').text();
+                Cliente.Stock = $(this).children().eq('4').text();
+                Cargo = 4
+                mostrarAlmacen(Cliente);
+            });
+
+        });
+
+         function AbrirModal($idAlmacen) {
+
+              $("#txtId").val($idAlmacen);
+
+             if ($idAlmacen == 0) {
+                 $("#txtdes").val("");
+                 $("#txtprecio").val("");
+                 $("#txtstock").val("");
+                 var x = document.getElementById("boton");
+                 x.style.display = "none";
+             }
+
+              $('#formModal').modal('show');
+          }
+
+         function Eliminar($idCliente) {
+
+             if (confirm("¿Realmente desea eliminar?")) {
+
+                    jQuery.ajax({
+                        url: "@Url.Action("Elimina", "Servicio")" + "?idAlmacen=" + $("#txtId").val(),
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                                Tabla_Almacen.ajax.reload();
+                        }
+                    });
+                }
+            }
+
+         function Guardar() {
+            var $data = {
+                OServicio: {
+                    ID_Servicio: $("#txtId").val(),
+                    Descripcion: $("#txtdes").val(),
+                    Precio: $("#txtprecio").val(),
+                    Cantidad: $("#txtstock").val(),
+                    Estado: Cargo,
+                }
+            }
+
+            jQuery.ajax({
+                url: "@Url.Action("InsertS", "Servicio")",
+                type: "POST",
+                data: JSON.stringify($data),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                      Tabla_Almacen.ajax.reload();
+                      $('#formModal').modal('hide');
+                },
+                error: function (error) {
+                    console.log(error)
+                },
+                beforeSend: function () {
+                }
+            });
+        }
+
+         function mostrarAlmacen(Cliente) {
+            $("#txtId").val(Cliente.ID);
+            $("#txtdes").val(Cliente.Descripcion);
+            $("#txtprecio").val(Cliente.Precio);
+            $("#txtstock").val(Cliente.Stock);
+            var x = document.getElementById("boton");
+            x.style.display = "block";
+            AbrirModal(Cliente.ID)
+        }
+
+    </script>
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Almacen</title>
+</head>
+<body>
+
+    <div class="row m-4">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    REGISTRO TRANSPORTE
+                </div>
+                <div class="card-body">
+                    <table class="hover" id="tbalmacen" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><font color="blue">ID</font></th>
+                                <th><font color="blue">Descripcion</font></th>
+                                <th><font color="blue">Precio</font></th>
+                                <th><font color="blue">Categoria</font></th>
+                                <th><font color="blue">Stock</font></th>
+
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Agregar Transporte</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <input type="hidden" id="txtId" />
+                            <div class="form-group">
+                                <label for="txtdes">Descripcion:</label>
+                                <input type="text" class="form-control" id="txtdes">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtprecio">Precio Unitario:</label>
+                                <input type="text" class="form-control" id="txtprecio">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtstock">Stock:</label>
+                                <input type="text" class="form-control" id="txtstock">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="boton" type="button" class="btn btn-danger" onclick="Eliminar()">Eliminar</button>
+                    <button type="button" class="btn btn-primary" onclick="Guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>

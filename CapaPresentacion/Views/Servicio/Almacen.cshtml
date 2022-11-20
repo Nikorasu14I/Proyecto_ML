@@ -1,0 +1,239 @@
+﻿
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+
+@section scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+    <script>
+        var TablaAlmacen;
+        var Cargo = 0;
+        $(document).ready(function () {
+
+            TablaAlmacen = $('#tbalmacen').DataTable({
+                "ajax": {
+                    "url": "@Url.Action("listar", "Servicio")",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "ID_Servicio" },
+                    { "data": "Descripcion" },
+                    { "data": "Precio" },
+                    { "data": "Categoria" },
+                    { "data": "Cantidad" }
+                   
+                ],
+                "language": {
+                    url: "https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json"
+                },
+               
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        text: 'Agregar Nuevo',
+                        attr: { class: 'btn btn-primary btn-sm' },
+                        action: function (e, dt, node, config) {
+                            AbrirModal(0)
+                        }
+                    }, "print", "excel"
+                ]
+            });
+            ProductoLoad();
+            $('#tbalmacen tbody').on('dblclick', 'tr', function () {
+                var Cliente = {};
+                Cliente.ID = $(this).children().eq('0').text();
+                Cliente.Descripcion = $(this).children().eq('1').text();
+                Cliente.Precio = $(this).children().eq('2').text();
+                Cliente.Stock = $(this).children().eq('4').text();
+                if ($(this).children().eq('3').text() == "Metal") { Cargo = 1 }
+                if ($(this).children().eq('3').text() == "Sonido") { Cargo = 3 }
+                if ($(this).children().eq('3').text() == "Iluminacion") { Cargo = 2 }
+                mostrarAlmacen(Cliente);
+            });
+
+        });
+
+        function AbrirModal($idCliente) {
+
+            $("#txtIdproducto").val($idCliente);
+           
+
+            if ($idCliente == 0) {
+
+                $("#txtDescripcion").val("");
+                $("#txtPrecio").val("");
+                $("#txtCantidad").val("");
+
+                var x = document.getElementById("boton");
+                x.style.display = "none";
+                var x = document.getElementById("Metodos");
+                x.style.display = "block";
+            }
+            
+            $('#formModal').modal('show');
+        }
+
+        function mostrarAlmacen(Cliente) {
+            $("#txtIdproducto").val(Cliente.ID);
+            $("#txtDescripcion").val(Cliente.Descripcion);
+            $("#txtPrecio").val(Cliente.Precio);
+            $("#txtCantidad").val(Cliente.Stock);
+            var x = document.getElementById("Metodos");
+            x.style.display = "none";
+            var x = document.getElementById("boton");
+            x.style.display = "block";
+            AbrirModal(Cliente.ID)
+        }
+
+        function ProductoLoad() {
+            // Load Selector ProductoLoad
+            jQuery.ajax({
+                url: '/Venta/Read',
+                type: "GET",
+                data: null,
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $.each(data.data, function (_index, value) {
+                        $("<option>").attr({ "value": value.ID_Servicio }).text(value.Descripcion).appendTo("#SCategoria");
+                    })
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
+
+        function Eliminar() {
+                if (confirm("¿Realmente desea eliminar?")) {
+
+                    jQuery.ajax({
+                        url: "@Url.Action("Elimina", "Servicio")" + "?idAlmacen=" + $("#txtIdproducto").val(),
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        success: function () {
+                            TablaAlmacen.ajax.reload();
+                            $('#formModal').modal('hide');
+                        }
+                    });
+                }
+            }
+
+        function Guardar() {
+            if ($("#txtDescripcion").val().trim() == "" || $("#txtCantidad").val().trim() == "" ) {
+                swal("Mensaje", "Complete los campos", "warning");
+                return;
+            }
+
+            var IDCargo = 0;
+            if ($("#txtIdproducto").val() == 0) {
+                IDCargo = $("#SCategoria").val()
+            }
+            else { IDCargo = Cargo }
+
+            var $data = {
+                OServicio: {
+                    ID_Servicio: $("#txtIdproducto").val(),
+                    Descripcion: $("#txtDescripcion").val(),
+                    Precio: $("#txtPrecio").val(),
+                    Estado: IDCargo,
+                    Cantidad: $("#txtCantidad").val(),
+                }
+
+            }
+
+            jQuery.ajax({
+                url: "@Url.Action("InsertS", "Servicio")",
+                type: "POST",
+                data: JSON.stringify($data),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    TablaAlmacen.ajax.reload();
+                    $('#formModal').modal('hide');
+                },
+                error: function (error) {
+                    console.log(error)
+                },
+                beforeSend: function () {
+                }
+            });
+        }
+    </script>
+
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Almacen</title>
+</head>
+<body>
+
+    <div class="row m-4">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    REGISTRO ALMACEN
+                </div>
+                <div class="card-body">
+                    <table class="hover" id="tbalmacen" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><font color="blue">ID</font></th>
+                                <th><font color="blue">Descripcion</font></th>
+                                <th><font color="blue">Precio</font></th>
+                                <th><font color="blue">Categoria</font></th>
+                                <th><font color="blue">Stock</font></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Agregar Producto</h5>
+
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <input type="hidden" id="txtIdproducto" />
+                            <div class="form-group">
+                                <label for="txtDescripcion">Descripcion:</label>
+                                <input type="text" class="form-control" id="txtDescripcion">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtPrecio">Precio:</label>
+                                <input type="text" class="form-control" id="txtPrecio">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtCantidad">Stock:</label>
+                                <input type="number" class="form-control" id="txtCantidad">
+                            </div>
+                            <div id="Metodos" class="form-group">
+                                <label for="Categoria">Categoria:</label>
+                                <select class="form-control" id="SCategoria">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="boton" style="display: none" type="button" class="btn btn-danger" onclick="Eliminar()">Eliminar</button>
+                    <button type="button" class="btn btn-primary" onclick="Guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

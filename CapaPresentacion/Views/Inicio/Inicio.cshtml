@@ -1,0 +1,647 @@
+﻿
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <!--====== Required meta tags ======-->
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!--====== Title ======-->
+    <title>SAFE</title>
+
+    <!--====== Favicon Icon ======-->
+    <link rel="shortcut icon" href="~/Content/Img/MLN.jpeg" type="image/png">
+
+    <!--====== Bootstrap css ======-->
+    <link rel="stylesheet" href="~/Content/Cliente/css/bootstrap.min.css">
+
+    <!--====== Line Icons css ======-->
+    <link rel="stylesheet" href="~/Content/Cliente//css/LineIcons.css">
+
+    <!--====== Magnific Popup css ======-->
+    <link rel="stylesheet" href="~/Content/Cliente//css/magnific-popup.css">
+
+    <!--====== Default css ======-->
+    <link rel="stylesheet" href="~/Content/Cliente//css/default.css">
+
+    <!--====== Style css ======-->
+    <link rel="stylesheet" href="~/Content/Cliente//css/style.css">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+
+    @Styles.Render("~/Content/Data/css")
+
+
+</head>
+
+<body>
+    <!--====== PRELOADER PART START ======-->
+
+    <div class="preloader">
+        <div class="loader_34">
+            <div class="ytp-spinner">
+                <div class="ytp-spinner-container">
+                    <div class="ytp-spinner-rotator">
+                        <div class="ytp-spinner-left">
+                            <div class="ytp-spinner-circle"></div>
+                        </div>
+                        <div class="ytp-spinner-right">
+                            <div class="ytp-spinner-circle"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--====== PRELOADER ENDS START ======-->
+    <!--====== HEADER PART START ======-->
+
+    <header id="home" class="header-area">
+        <div class="navigation fixed-top">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <nav class="navbar navbar-expand-lg">
+                            <!-- Logo -->
+                            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="toggler-icon"></span>
+                                <span class="toggler-icon"></span>
+                                <span class="toggler-icon"></span>
+                            </button>
+
+                            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                                <ul class="navbar-nav ml-auto">
+                                    <li class="nav-item active"><a class="page-scroll" href="#home">Inicio</a></li>
+                                    <li class="nav-item"><a class="page-scroll" href="#about">Sobre Nosotros</a></li>
+                                    <li class="nav-item"><a class="page-scroll" href="#service">Cotizar</a></li>
+                                    <li class="nav-item"><a class="page-scroll" href="#contact">Contacto</a></li>
+                                    <li class="nav-item"><a href="@Url.Action("Login","Acceso")">Ingresar</a></li>
+                                </ul>
+                            </div> <!-- navbar collapse -->
+                        </nav> <!-- navbar -->
+                    </div>
+                </div> <!-- row -->
+            </div> <!-- container -->
+        </div> <!-- navigation -->
+
+        <div id="parallax" class="header-content d-flex align-items-center">
+            <div class="header-shape shape-one layer" data-depth="0.10">
+                <img src="~/Content/Cliente/images/banner/shape/shape-1.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="header-shape shape-tow layer" data-depth="0.30">
+                <img src="~/Content/Cliente/images/banner/shape/shape-2.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="header-shape shape-three layer" data-depth="0.40">
+                <img src="~/Content/Cliente/images/banner/shape/shape-3.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="header-shape shape-fore layer" data-depth="0.60">
+                <img src="~/Content/Cliente/images/banner/shape/shape-2.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="header-shape shape-five layer" data-depth="0.20">
+                <img src="~/Content/Cliente/images/banner/shape/shape-1.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="header-shape shape-six layer" data-depth="0.15">
+                <img src="~/Content/Cliente/images/banner/shape/shape-4.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="header-shape shape-seven layer" data-depth="0.50">
+                <img src="~/Content/Cliente/images/banner/shape/shape-5.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="header-shape shape-eight layer" data-depth="0.40">
+                <img src="~/Content/Cliente/images/banner/shape/shape-3.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="header-shape shape-nine layer" data-depth="0.20">
+                <img src="~/Content/Cliente/images/banner/shape/shape-6.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="header-shape shape-ten layer" data-depth="0.30">
+                <img src="~/Content/Cliente/images/banner/shape/shape-3.png" alt="Shape">
+            </div> <!-- header shape -->
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-xl-5 col-lg-6">
+                        <div class="header-content-right">
+                            <h4 class="sub-title">Bienvenido</h4>
+                            <h1 class="title">ML & Compañia Limitada</h1>
+                            <a class="main-btn" href="#service">Cotizar</a>
+                        </div> <!-- header content right -->
+                    </div>
+                    <div class="col-lg-5 offset-xl-1">
+                        <div>
+                            <img style="max-width:520px; max-height:520px;" src="~/Content/Img/MLN.jpeg" alt="hero">
+                        </div> <!-- header image -->
+                    </div>
+                </div> <!-- row -->
+            </div> <!-- container -->
+            <div class="header-social">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="header-social-icon">
+                                <ul>
+                                    <li><a href="#"><i class="lni-facebook-filled"></i></a></li>
+                                </ul>
+                            </div> <!-- header social -->
+                        </div>
+                    </div> <!-- row -->
+                </div> <!-- container -->
+            </div> <!-- header social -->
+        </div> <!-- header content -->
+    </header>
+
+    <!--====== HEADER PART ENDS ======-->
+    <!--====== ABOUT PART START ======-->
+
+    <section id="about" class="about-area pt-125 pb-130">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="section-title text-center">
+                        <h2 class="title">Sobre Nosotros</h2>
+                        <p>ML & Compañia Limitada es una empresa privada encargada de organizar eventos. </p>
+                    </div> <!-- section title -->
+                </div>
+            </div> <!-- row -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="about-content mt-50">
+                        <h5 class="about-title">Mision</h5>
+                        <p>
+                            Brindar a todos nuestros clientes una experiencia única e
+                            innovadora en cada uno de sus eventos, ofreciendo el más alto
+                            nivel de excelencia y calidad en nuestros servicios.
+                        </p>
+
+                    </div> <!-- about content -->
+                </div>
+                <div class="col-xl-5 offset-xl-1 col-lg-6">
+                    <div class="about-content mt-50">
+                        <h5 class="about-title">Vision</h5>
+                        <p>
+                            Convertirse en la empresa líder en el mercado de
+                            producción y logística para todo tipo eventos.
+                        </p>
+
+                    </div> <!-- about content -->
+                </div>
+            </div> <!-- row -->
+        </div> <!-- container -->
+    </section>
+
+    <!--====== ABOUT PART ENDS ======-->
+    <!--====== SERVICES PART START ======-->
+
+    <section id="service" class="services-area gray-bg pt-120 pb-130">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="section-title text-center pb-30">
+                        <h2 class="title">Cotizar</h2>
+                    </div> <!-- section title -->
+                </div>
+            </div> <!-- row -->
+
+            <table class="table">
+                <thead style="font-size:14px;">
+                    <tr class="bg-white">
+                        <th><font color="blue">Detalle Producto</font></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tr style="font-size:13px;" class="bg-white">
+                    <th>
+                        Descripcion:
+                        <input type="text" class="form-control form-control-sm model" id="nombreproducto" readonly>
+                        <input type="hidden" class="form-control form-control-sm model" id="idproducto" readonly>
+                    </th>
+                    <th>
+                        Precio:
+                        <input type="text" class="form-control form-control-sm model" id="precio" readonly>
+                    </th>
+                    <th>
+                        Cantidad: <span class="required">*</span>
+                        <input style="background-color:#E0E0E0" type="text" class="form-control form-control-sm model" id="Cantidad">
+                    </th>
+                </tr>
+                <tr style="font-size:13px;" class="bg-white">
+                    <th>
+                        <label for="btnBuscarProducto" class="col-form-label col-form-label-sm invisible">Buscar:</label>
+                        <button id="btnBuscarProducto" type="button" class="form-control form-control-sm model bg-primary" onclick="AbrirModalSer()"><i style="color:white" class="fa fa-search" aria-hidden="true"></i></button>
+                    </th>
+                    <th>
+                        <label for="btnAsignar" class="col-form-label col-form-label-sm invisible">Buscar:</label>
+                        <form action="javascript:fn_agregar()" ; method="post" id="frm_usu" class="form-horizontal">
+                            <button id="btnAgregar" type="submit" class="form-control form-control-sm model btn-success"><i class="fa fa-plus-circle" aria-hidden="true"></i> </button>
+                        </form>
+                    </th>
+                    <th>
+                    </th>
+                </tr>
+
+            </table>
+
+            <table id="detalle" class="lista table">
+                <thead style="font-size:14px;">
+                    <tr class="bg-white">
+                        <th><font color="blue">Detalle Proforma</font></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    <tr class="bg-white">
+                        <th>Codigo</th>
+                        <th>Descripcion del Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+
+            </table>
+
+            <table class="table">
+                <tr style="font-size:13px;" class="bg-white">
+                    <th>
+                        Total con Iva
+                        <input style="font-size:13px; font-weight:700;" class="form-control" type="text" name="TotalaPagar" id="Totaliva" required readonly />
+                    </th>
+                    <th style="align-content:center">
+                        Total
+                        <input style="font-size:13px; font-weight:700;" class="form-control" type="text" name="TotalaPagar" id="TotalaPagar" required readonly />
+                    </th>
+                    <th>
+                        Imprimir
+                        <button type="button" class="btn btn-sm btn-primary btn-block form-control" onclick="Guardar()"><i class="fa fa-clipboard" aria-hidden="true"></i></button>
+                    </th>
+                </tr>
+
+            </table>
+
+
+        </div> <!-- container -->
+    </section>
+
+    <!--====== SERVICES PART ENDS ======-->
+    <!--====== CONTACT PART START ======-->
+
+    <section id="contact" class="contact-area pt-125 pb-130 gray-bg">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="section-title text-center pb-25">
+                        <h2 class="title">Contacto</h2>
+                    </div> <!-- section title -->
+                </div>
+            </div> <!-- row -->
+            <div class="row justify-content-center">
+                <div class="col-lg-4 col-md-6 col-sm-7">
+                    <div class="contact-box text-center mt-30">
+                        <div class="contact-icon">
+                            <i class="lni-map-marker"></i>
+                        </div>
+                        <div class="contact-content">
+                            <h6 class="contact-title">Direccion</h6>
+                            <p>
+                                Direccion Km 8 1/2 Carretera Norte, Camilo Chamorro
+                                Veterinaria Antares Cuadra y media al norte. M/D
+                            </p>
+                        </div>
+                    </div> <!-- contact box -->
+                </div>
+                <div class="col-lg-4 col-md-6 col-sm-7">
+                    <div class="contact-box text-center mt-30">
+                        <div class="contact-icon">
+                            <i class="lni-phone"></i>
+                        </div>
+                        <div class="contact-content">
+                            <h6 class="contact-title">Telefono</h6>
+                            <p>C: +505 8656 5128</p>
+                            <p>T: +505 8882 4978</p>
+                        </div>
+                    </div> <!-- contact box -->
+                </div>
+                <div class="col-lg-4 col-md-6 col-sm-7">
+                    <div class="contact-box text-center mt-30">
+                        <div class="contact-icon">
+                            <i class="lni-envelope"></i>
+                        </div>
+                        <div class="contact-content">
+                            <h6 class="contact-title">Correo</h6>
+                            <p>mlproduccioneventos@gmail.com</p>
+                        </div>
+                    </div> <!-- contact box -->
+                </div>
+            </div> <!-- row -->
+            <div class="row">
+                <div class="col-lg-3">
+                </div>
+                <div class="col-lg-6">
+                    <div class="contact-map mt-60">
+                        <div class="gmap_canvas">
+                            <iframe id="gmap_canvas" src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3900.462740622609!2d-86.2035694!3d12.1488674!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f73fc3b4d1dc52b%3A0x5e83384d57e966a2!2s4QXX%2BGC9%2C%20Managua%2011035!5e0!3m2!1ses!2sni!4v1656534787557!5m2!1ses!2sni" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
+                        </div>
+                    </div> <!-- contact map -->
+                </div>
+            </div> <!-- row -->
+        </div> <!-- container -->
+    </section>
+
+   
+
+    <a href="#" class="back-to-top"><i class="lni-chevron-up"></i></a>
+
+    <!--====== BACK TOP TOP PART ENDS ======-->
+    <!--====== jquery js ======-->
+    <script src="~/Content/Cliente/js/vendor/modernizr-3.6.0.min.js"></script>
+    <script src="~/Content/Cliente/js/vendor/jquery-1.12.4.min.js"></script>
+
+    <!--====== Bootstrap js ======-->
+    <script src="~/Content/Cliente/js/bootstrap.min.js"></script>
+    <script src="~/Content/Cliente/js/popper.min.js"></script>
+
+    <!--====== Magnific Popup js ======-->
+    <script src="~/Content/Cliente/js/jquery.magnific-popup.min.js"></script>
+
+    <!--====== Parallax js ======-->
+    <script src="~/Content/Cliente/js/parallax.min.js"></script>
+
+    <!--====== Counter Up js ======-->
+    <script src="~/Content/Cliente/js/waypoints.min.js"></script>
+    <script src="~/Content/Cliente/js/jquery.counterup.min.js"></script>
+
+    <!--====== Appear js ======-->
+    <script src="~/Content/Cliente/s/jquery.appear.min.js"></script>
+
+    <!--====== Scrolling js ======-->
+    <script src="~/Content/Cliente/js/scrolling-nav.js"></script>
+    <script src="~/Content/Cliente/js/jquery.easing.min.js"></script>
+
+
+    <!--====== Main js ======-->
+
+    <script src="~/Content/Cliente/js/main.js"></script>
+
+    @Scripts.Render("~/Content/Data/js")
+    @Scripts.Render("~/bundles/complementos")
+
+    <div class="modal fade" id="ModalServicios" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 1250px!important;" role="document">
+            <div class="modal-content">
+
+                <div class="modal-body">
+                    <div class="row m-4">
+                        <div class="col-sm-12">
+                            <div class="card">
+
+                                <div class="card-body">
+                                    <table id="tba" class="hover" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th><font color="blue">ID_Servicio</font></th>
+                                                <th><font color="blue">Descripcion</font></th>
+                                                <th><font color="blue">Precio</font></th>
+                                                <th><font color="blue">Categoria</font></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <script>
+        var Contador = 0;
+        var total = 0;
+        var impuesto = 0;
+        var totali = 0;
+        var valor = 0;
+        var canti = 0;
+        var subtotal = 0;
+
+        function Guardar()
+        {
+            if ($("#TotalaPagar").val() == "" || $("#TotalaPagar").val() == 0) {
+                swal("Mensaje", "Ingrese un Producto", "error");
+                return;
+            }
+            descuento();              
+            var i = 0;
+            var envio = "{Impuesto:" + impuesto + ",Subtotal:"
+                + $('#TotalaPagar').val() + ",Total:" + totali + ",";
+            $("#detalle tbody tr").each(function (index) {
+                if (i == 0) {
+                    envio += "ListadoDetalle:[{ID_Servicio:'" + $(this).find('td').eq(0).text() +
+                        "',Cantidad:'" + $(this).find('td').eq(2).text() +
+                        "',SubTotal:'" + $(this).find('td').eq(4).text() + "'}";
+                } else {
+                    envio += ",{ID_Servicio:'" + $(this).find('td').eq(0).text() +
+                        "',Cantidad:'" + $(this).find('td').eq(2).text() +
+                        "',SubTotal:'" + $(this).find('td').eq(4).text() + "'}"
+                }
+                i = 1;
+            });
+            envio += "]}";
+
+            var json = eval("(" + envio + ')');
+
+            $.ajax({
+                url: "@Url.Action("GuardarP", "Servicio")",
+                data: JSON.stringify(json),
+                type: "POST",
+                async: false,//this makes the ajax-call blocking
+                contentType: 'application/json;charset=UTF-8',
+                dataType: 'json',
+                success: function (response) {
+                    setTimeout(() => {
+                        var caracteristicas = "height=600,width=800,scrollTo,resizable=1,scrollbars=1,location=0";
+                        nueva = window.open("/Venta/Proforma?ID=" + parseInt(response), 'popup', caracteristicas);
+                    }, 2500);
+                    limpiarDetalle();
+                    limpiarProducto();
+                    TotalNuevo();
+                },
+                error: function (error) {
+
+                }
+            });
+        }
+
+        function AbrirModalSer() {
+            ListarServicios();
+            $('#tba tbody').on('dblclick', 'tr', function () {
+                var Cliente = {};
+                Cliente.Codigo = $(this).children().eq('0').text();
+                Cliente.Des = $(this).children().eq('1').text();
+                Cliente.Pre = $(this).children().eq('2').text();
+                mostrarServ(Cliente);
+            });
+            
+            $('#ModalServicios').modal('show');
+        }
+
+        function mostrarServ(Cliente) {
+            $("#nombreproducto").val(Cliente.Des);
+            $("#precio").val(Cliente.Pre);
+            $("#idproducto").val(Cliente.Codigo);
+            $("#Cantidad").focus();          
+            $('#ModalServicios').modal('hide');
+            $("#Cantidad").focus();
+        }
+
+        function ListarServicios() {
+
+            if (Contador == 0)
+            {
+                $("#Cantidad").keypress(function (e) {
+                    var keycode = (e.keyCode ? e.keyCode : e.which);
+                    if (keycode == '13') {
+                        fn_agregar();
+                    }
+                });
+
+                Contador = 1;
+                Tabla_S = $('#tba').DataTable({
+                    "ajax": {
+                        "url": "@Url.Action("listar", "Servicio")",
+                        "type": "GET",
+                        "datatype": "json"
+                    },
+                    "columns": [
+                        { "data": "ID_Servicio" },
+                        { "data": "Descripcion" },
+                        { "data": "Precio" },
+                        { "data": "Categoria" }
+                    ],
+                    dom: 'Bfrtip',
+                });
+            }
+
+        }
+
+        function fn_agregar() {
+            //VALIDACION de stock y cantidad
+            if ($("#nombreproducto").val().trim() == "") {
+                swal("Mensaje", "Complete los campos", "warning");
+                return;
+            }
+
+            if ($("#Cantidad").val().trim() == "") {
+                swal("Mensaje", "Complete los campos", "warning");
+                return;
+            }
+
+            if ($("#Cantidad").val() === 0) { }
+            else if ($("#Cantidad").val() > 0) { }
+            else { swal("Mensaje", "Ingrese una cantidad valida", "error"); return; }
+
+
+            $('#detalle > tbody  > tr').each(function (index, tr) {
+                var fila = tr;
+                var id = $(fila).find("td").eq(0).html();
+
+                if (id == $("#idproducto").val()) {
+                    existe_codigo = true;
+                    valor = $(fila).find("td").eq(4).html();
+                    canti = $(fila).find("td").eq(2).html();
+                    restar();
+                    $(fila).fadeOut("normal", function () {
+                        $(fila).remove();
+                    });
+                    return;
+                }
+            });
+                AgregarDetalle();
+        };
+
+        function sumar() {
+            total = total + (subtotal);
+            totali = total + (total * 15 / 100)
+            $("#TotalaPagar").val(total);
+            $("#Totaliva").val(totali);
+        }
+
+        function restar() {
+            total = total - valor;
+            totali = total + (total * 15 / 100)
+            $("#TotalaPagar").val(total);
+            $("#Totaliva").val(totali);
+        }
+
+        function descuento() {
+            impuesto = total * 15 / 100;
+            totali = total + impuesto;
+        }
+
+        function limpiarProducto() {
+            $("#nombreproducto").val("");
+            $("#idproducto").val("");
+            $("#precio").val("");
+            $("#Cantidad").val("");
+        }
+
+        function limpiarDetalle() {
+            $("#detalle tbody tr").remove();
+        }
+
+        function TotalNuevo() {
+            total = 0;
+            valor = 0;
+            subtotal = 0;
+            sumar();
+        }
+
+        function AgregarDetalle() {
+
+            var y = 0;
+            y = $("#Cantidad").val();
+            y = parseInt(y) + parseInt(canti);
+
+            cadena = "<tr class= 'bg-white'>"
+            cadena = cadena + "<td>" + $("#idproducto").val() + "</td>";
+            cadena = cadena + "<td>" + $("#nombreproducto").val() + "</td>";
+            cadena = cadena + "<td>" + y + "</td>";
+            cadena = cadena + "<td>" + $("#precio").val() + "</td>";
+            var x = 0;
+            x = $("#precio").val();
+
+            subtotal = (x * y);
+            cadena = cadena + "<td>" + subtotal + "</td>"
+            cadena = cadena + "<td><a class='eliminar'><button class='btn btn-danger' type='button'><span class='fa fa-remove'></span></button></a></td>";
+            $("#detalle tbody").append(cadena);
+            sumar();
+            limpiarProducto();
+            cantidad = 0;
+            $("a[class='eliminar']").click(function () {
+                valor = $(this).parents("tr").find("td").eq(4).html();
+                $(this).parents("tr").fadeOut("normal", function () {
+                    $(this).remove();
+                    restar();
+                });
+            });
+
+        }
+
+    </script>
+
+</body>
+
+
+</html>

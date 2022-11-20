@@ -1,0 +1,240 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAFE</title>
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="~/Content/adminlte/plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/Content/adminlte/dist/css/adminlte.min.css">
+
+</head>
+
+
+<body onload="imprimir()">
+
+    <script type="text/javascript">
+        function imprimir() {
+            var printContents = document.getElementById("seleccion").innerHTML;
+            var originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+        }
+    </script>
+
+    <div style="font-size: 11px; text-align: right;">
+        <center>
+            <button type="button" onclick="javascript: imprimir()">IMPRIMIR</button>
+        </center>
+    </div>
+
+    <div id="seleccion">
+        @Styles.Render("~/Content/css")
+        @Styles.Render("~/Content/Data/css")
+
+        <center>
+            <div>
+                <table class="bg-white" style="width: 650px; padding: 10px;" border="0">
+
+                    <tbody>
+                        <tr class="rainbow-linear-gradient">
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <img height="180" src="~/Content/Img/MLN.jpeg" />
+                            </td>
+                            <td>
+                                <table style="width: 100%; height: 120px; font-weight: bold; ">
+                                    <tr style="font-size:18px;"><td align="right">Contrato</td></tr>
+                                </table>
+                            </td>
+                            <td colspan="4" rowspan="4" align="center" style="vertical-align: top;">
+                                <table style="width: 100%; height: 120px; font-weight: bold; ">
+                                    <tr style="font-size:19px;"><td align="right">PRODUCCION DE EVENTOS </td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">Direccion Km 8 1/2 Carretera Norte, Camilo Chamorro</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">Veterinaria Antares Cuadra y media al norte. M/D</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">C: 8656 - 5128 | M: 8882 - 4978</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">grupomlproduccioneventos@gmail.com</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"> RUC 0012802770057K</td></tr>
+                                </table>
+                            </td>
+                        </tr>
+
+
+                    </tbody>
+                </table>
+            </div>
+            <table class="bg-white" style="width: 650px; padding: 10px;" border="0">
+                <tbody>
+                    <tr>
+                        <td>
+                        </td>
+                    </tr>
+
+                    <tr style="height: 20px;"><td colspan="6"><br /></td></tr>
+                    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+                    <tr>
+                        <td colspan="20">
+                            <table style=" width: 100%; " border="0">
+                                <tr>
+                                    <td style="width: 5%; ">Yo</td>
+                                    <td style="border-bottom:1px solid #000" , width="40%"><span>@ViewData["Nombre"]</span></td>
+                                    <td style="width: 55%">, quien en curso del siguiente contrato seré</td>
+                                </tr>
+
+                            </table>
+                            <table style=" width: 100%; " border="0">
+                                <tr>
+                                    <td style="width: 100%;">denominado "el Contratante" de "ML", he acordado en celebrar este contrato bajo las</td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 100%;">siguientes cláusulas:</td>
+                                </tr>
+                                <tr><td> <br /></td> </tr>
+
+
+                            </table>
+
+                            <table style=" width: 100%; " border="0">
+                                <tr>
+                                    <td style="width: 74%;">1.- "ML" se compromete a amenizar un evento social al contratante el</td>
+                                    <td style="border-bottom:1px solid #000" , width="20%"><span>@ViewData["Fecha"]</span></td>
+                                </tr>
+
+                            </table>
+
+                            <table style=" width: 100%; " border="0">
+                                <tr>
+                                    <td style="width: 25%;">en la siguiente dirección:</td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom:1px solid #000" , width="100%"><span>@ViewData["Direccion"]</span></td>
+                                </tr>
+
+                            </table>
+
+                            <table style=" width: 84%; " border="0">
+                                <tr>
+                                    <td style="width: 40%;">2.- Teniendo como horario de inicio las </td>
+                                    <td style="border-bottom:1px solid #000" , width="10%"><span>@ViewData["Horai"]</span></td>
+                                    <td style="width: 18%;">Finalizando a las </td>
+                                    <td style="border-bottom:1px solid #000" , width="10%"><span>@ViewData["Horaf"]</span></td>
+                                </tr>
+                            </table>
+
+
+                            <table style=" width: 100%; " border="0">
+                                <tr>
+                                    <td style="width: 100%;">3.- Los Honorarios serán cancelados por el contratante una vez finalizado el compromiso</td>
+                                </tr>
+                            </table>
+
+                            <table style=" width: 52%; " border="0">
+                                <tr>
+                                    <td style="width: 42%;">siendo este contrato por un valor de </td>
+                                    <td style="border-bottom:1px solid #000" , width="10%"><span>@ViewData["Total"]</span></td>
+
+                                </tr>
+                            </table>
+
+                            <table style=" width: 100%; " border="0">
+                                <tr>
+                                    <td style="width: 100%;">4.-En caso de incumplimiento de alguna de las dos partes a las disposiciones anotadas</td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 100%;">deberá indemnizarse a la parte afectada</td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 100%;">5.-En caso de altercados dentro del local de trabajo el contratante se obliga a brindar </td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 100%;">protección de los productos del servicio, como al personal de "ML", esta será señal efectiva para finalizar el compromiso</td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 77%;">6.-Los gastos de transporte en su totalidad seran asumidos por el contratante </td>
+                                </tr>
+
+                            </table>
+
+                            <table style=" width: 100%; " border="0">
+                                <tr>
+                                    <td style="width: 100%;">
+                                        7.- Al asumir el contratante los gastos de transporte asume
+                                        también la responsabilidad de daños a los productos alquilados en
+                                        caso de accidentes en trayectoria al mismo.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 100%;">
+                                        8.- La alimentacion correrá por cuenta del contratante.
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <table style=" width: 85%; " border="0">
+                                <tr>
+                                    <td style="width: 44%;">9.-El adelanto de este contrato será de </td>
+                                    <td style="border-bottom:1px solid #000" , width="40%"><span>@ViewData["Adelanto"]</span></td>
+                                </tr>
+                            </table>
+
+                            <table style=" width: 100%; " border="0">
+                                <tr>
+                                    <td style="width: 28%;">10.-OBSERVACIONES:</td>
+                                </tr>
+                                <tr>
+                                    <td style="border-bottom:1px solid #000" , width="100%"><span id="observacionC">@ViewData["Observacion"]</span></td>
+                                </tr>
+                            </table>
+
+                            <table style=" width: 100%; " border="0">
+                                <tr>
+                                    <td style="width: 100%;">
+                                        En fe de lo anterior, hemos acordado firmar el presente
+                                        contrato en el km 8 de la carretera norte (ML)
+                                    </td>
+                                </tr>
+
+                            </table>
+
+                            <table style=" width: 53%; " border="0">
+                                <tr>
+                                    <td style="width: 10%;">Documento creado el: </td>
+                                    
+                                    <td style="border-bottom:1px solid #000" , width="5%"><span>@ViewData["FechaC"]</span></td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr style="height: 10px;"></tr>
+
+                    <tr style="height: 10px;"><td colspan="6"><br /><br /></td></tr>
+
+                </tbody>
+            </table>
+        </center>
+    </div>
+
+</body>
+</html>
+@Scripts.Render("~/bundles/bootstra")
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/Content/Data/js")
+@Scripts.Render("~/bundles/complementos")
+
+<!--<script src="~/Content/adminlte/plugins/jquery/jquery.min.js"></script>-->
+<!-- Bootstrap 4 -->
+<!--<script src="~/Content/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>-->
+<!-- AdminLTE App -->
+<!--<script src="~/Content/adminlte/dist/js/adminlte.min.js"></script>-->

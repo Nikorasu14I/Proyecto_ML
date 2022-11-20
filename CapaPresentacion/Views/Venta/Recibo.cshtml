@@ -1,0 +1,165 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SAFE</title>
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="~/Content/adminlte/plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/Content/adminlte/dist/css/adminlte.min.css">
+
+</head>
+
+
+<body>
+
+    <script type="text/javascript">
+
+      
+        function imprimir() {
+            var printContents = document.getElementById("seleccion").innerHTML;
+            var originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+        }
+
+        document.onload = imprimir();
+    </script>
+
+    <div style="font-size: 11px; text-align: right;">
+        <center>
+            <button type="button" onclick="javascript: imprimir()">IMPRIMIR</button>
+        </center>
+    </div>
+
+    <div id="seleccion">
+        @Styles.Render("~/Content/css")
+        @Styles.Render("~/Content/Data/css")
+
+        <center>
+            <div>
+
+                <table class="bg-white" style="width: 650px; border:0.5px solid #000;padding: 10px;" border="0">
+
+                    <tbody>
+                        <tr class="rainbow-linear-gradient">
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <img height="180" src="~/Content/Img/MLN.jpeg" />
+                            </td>
+                            <td>
+                                <table style="width: 100%; height: 140px; font-weight: bold; ">
+                                    <tr style="font-size:18px;"><td align="center">RECIBO OFICIAL DE CAJA</td></tr>
+                                    <tr style="font-size:18px; color:red"><td align="center"><span>@ViewData["ID"]</span></td></tr>
+                                </table>
+                            </td>
+                            <td colspan="4" rowspan="4" align="center" style="vertical-align: top;">
+                                <table style="width: 100%; height: 120px; font-weight: bold; ">
+                                    <tr style="font-size:19px;"><td align="right">PRODUCCION DE EVENTOS </td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">Direccion Km 8 1/2 Carretera Norte, Camilo Chamorro</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">Veterinaria Antares Cuadra y media al norte. M/D</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">C: 8656 - 5128 | M: 8882 - 4978</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">grupomlproduccioneventos@gmail.com</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"> RUC 0012802770057K</td></tr>
+                                </table>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="4" align="center"><span id="direcciontienda"></span></td>
+                        </tr>
+                        <tr style="height: 20px;"><td colspan="6"><br /></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+                        <tr>
+                            <td colspan="6">
+                                <table style=" width: 100%; " border="0">
+                                    <tr>
+                                        <td style="width: 8%; font-weight: bold;">Recibi de:</td>
+                                        <td style="width: 40%; border-bottom: 1px solid #000"><span>@ViewData["Nombre"]</span></td>
+                                        <td style="width: 3%; font-weight: bold;">Fecha:</td>
+                                        <td style="width: 4%; border-bottom: 1px solid #000"><span>@ViewData["Fecha"]</span></td>
+
+                                    </tr>
+
+
+                                </table>
+
+                                <table style=" width: 100%; " border="0">
+
+                                    <tr>
+                                        <td style="width: 16%; font-weight: bold;"> La cantidad de:</td>
+                                        <td style="width: 40%; border-bottom:1px solid #000"><span>@ViewData["Monto"]</span></td>
+                                        <td style="width: 8%; font-weight: bold;"> Metodo:</td>
+                                        <td style="width: 20%; border-bottom: 1px solid #000"><span id="fecha">@ViewData["Metodo"]</span></td>
+                                    </tr>
+
+                                </table>
+
+                                <table style=" width: 100%; " border="0">
+
+                                    <tr>
+                                        <td style="width: 4%; font-weight: bold;"> En Efectivo:</td>
+                                        <td style="width: 10%; border-bottom: 1px solid #000"><span>@ViewData["Monto"]</span></td>
+                                        <td style="width: 2%; font-weight: bold;"> Cheque:</td>
+                                        <td style="width: 10%; border-bottom: 1px solid #000"><span id="fecha">@ViewData["Metodo"]</span></td>
+                                        <td style="width: 2%; font-weight: bold;"> Banco:</td>
+                                        <td style="width: 10%; border-bottom: 1px solid #000"><span id="fecha">@ViewData["Metodo"]</span></td>
+                                    </tr>
+
+                                </table>
+
+                                <br />
+                                <br />
+                                <br />
+                                <br />
+                                <table style=" width: 100%; " border="0">
+
+                                    <tr></tr>
+                                    <tr>
+
+                                        <td style="font-weight: bold; width: 37%; padding-right: 10px "> RECIBI CONFORME</td>
+                                        <td style=" font-weight: bold; width: 35%"> AUTORIZADO POR</td>
+                                        <td style=" font-weight: bold; width: 30% "> ENTREGUE CONFORME</td>
+
+                                    </tr>
+
+                                    <tr>
+                                    </tr>
+                                </table>
+
+                            </td>
+                        </tr>
+
+                        <tr style="height: 10px;"></tr>
+                        
+                        
+                    </tbody>
+                </table>
+            </div>
+        </center>
+    </div>
+
+
+</body>
+</html>
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstra")
+@Scripts.Render("~/Content/Data/js")
+@Scripts.Render("~/bundles/complementos")
+
+<!--<script src="~/Content/adminlte/plugins/jquery/jquery.min.js"></script>-->
+<!-- Bootstrap 4 -->
+<!--<script src="~/Content/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>-->
+<!-- AdminLTE App -->
+<!--<script src="~/Content/adminlte/dist/js/adminlte.min.js"></script>-->

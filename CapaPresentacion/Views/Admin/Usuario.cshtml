@@ -1,0 +1,226 @@
+﻿
+@{
+    ViewBag.Title = "Usuario";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+<html>
+
+<body>
+
+    <div class="row m-4">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    REGISTRO USUARIO
+                </div>
+                <div class="card-body">
+                    <table class="hover" id="tbUsuario" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><font color="blue">Nombre</font></th>
+                                <th><font color="blue">Cargo</font></th>
+                                <th><font color="blue">Usuario</font></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ModalServicios" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 1350px!important;" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Buscar Empleado</h5>
+
+                </div>
+                <div class="modal-body">
+
+                    <div class="row m-4">
+                        <div class="col-sm-12">
+                            <div class="card">
+                                <div class="card-header">
+                                </div>
+                                <div class="card-body">
+                                    <table class="hover" id="tba" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th><font color="blue">ID Empleado</font></th>
+                                                <th><font color="blue">Nombre</font></th>
+                                                <th><font color="blue">Cargo</font></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+               
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Agregar Usuario</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="IDU">ID_Empleado:</label>
+                                <input type="text" class="form-control" id="IDU">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="txtUsuario">Usuario:</label>
+                                <input type="text" class="form-control" id="txtUsuario">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-lg" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="Guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @section scripts{
+
+        <script>
+            var tabla_Cliente;
+            var tabla_Empleado;
+            var Contador = 0;
+            $(document).ready(function () {
+
+                tabla_Cliente = $('#tbUsuario').DataTable({
+                "ajax": {
+                    "url": "@Url.Action("listar", "Admin")",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "Pass" },
+                    { "data": "Cargo" },
+                    { "data": "User" },
+
+                    { "data": "ID_Usuario", "render": function (data) {
+                        return  "<button class='btn btn-danger btn-sm ml-2' type='button' onclick='Eliminar(" + data + ")'><i class='fa fa-trash'></i></button>"
+                        },
+                        "orderable": false,
+                        "searchable": false,
+                        "width": "150px"
+                    }
+                ],
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        text: 'Agregar Nuevo',
+                        attr: { class: 'btn btn-primary btn-sm' },
+                        action: function (e, dt, node, config) {
+                            AbrirModal(0)
+                        }
+                    }
+                 ],
+               @*  "language": {
+                     "url": "@Url.Content("~/Content/datatable/idioma/datatable.es-ES.json")"}*@
+
+            });
+            });
+
+          function AbrirModal() {
+                ListarEmpleado();
+                $('#tba tbody').on('dblclick', 'tr', function () {
+                    $("#IDU").val($(this).children().eq('0').text());
+                    $('#ModalServicios').modal('hide');
+                    $('#formModal').modal('show');
+                });
+                $('#ModalServicios').modal('show');
+          }
+
+          function ListarEmpleado() {
+
+            if (Contador == 0)
+            {
+                Contador = 1;
+                tabla_Empleado = $('#tba').DataTable({
+                    "ajax": {
+                        "url": "@Url.Action("listarER", "Admin")",
+                        "type": "GET",
+                        "datatype": "json"
+                    },
+                    "columns": [
+                        { "data": "ID_Empleado" },
+                        { "data": "Nombre" },
+                        { "data": "Apellido" }
+                    ],
+                    dom: 'Bfrtip',
+                    
+                });
+            }
+            else
+            {
+
+            }
+        }
+
+          function Eliminar($idCliente) {
+                if (confirm("¿Realmente desea eliminar?")) {
+
+                    jQuery.ajax({
+                        url: "@Url.Action("EliminarU", "Admin")" + "?idCliente=" + $idCliente,
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            tabla_Cliente.ajax.reload();
+                            tabla_Empleado.ajax.reload();
+                        }
+                    });
+                }
+            }
+
+          function Guardar() {
+            var $data = {
+                OUsuario: {
+                    ID_Empleado: $("#IDU").val(),
+                    User: $("#txtUsuario").val()         
+                }
+            }
+
+            jQuery.ajax({
+                url: "@Url.Action("Guardar", "Admin")",
+                type: "POST",
+                data: JSON.stringify($data),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                        tabla_Cliente.ajax.reload();
+                        $('#formModal').modal('hide');
+
+                },
+                error: function (error) {
+                    console.log(error)
+                },
+                beforeSend: function () {
+                }
+            });
+        }
+
+        </script>
+    }
+
+</body>
+
+
+</html>

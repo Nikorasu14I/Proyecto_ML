@@ -1,0 +1,215 @@
+﻿@{
+    ViewBag.Title = "Cliente";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+
+<!DOCTYPE html>
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Cliente</title>
+</head>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+
+
+<html>
+<body>
+    <div class="row m-4">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    REGISTRO CLIENTES
+                </div>
+                <div class="card-body">
+                    <table class="hover" id="tbCliente" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><font color="blue">ID Cliente</font> </th>
+                                <th><font color="blue">Nombre</font></th>
+                                <th><font color="blue">Apellido</font></th>
+                                <th><font color="blue">Cedula</font></th>
+                                <th><font color="blue">Telefono</font></th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Agregar Cliente</h5>
+
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <input type="hidden" id="txtIdCliente" />
+                            <div class="form-group">
+                                <label for="txtNombre">Nombre:</label>
+                                <input type="text" class="form-control" id="txtNombre">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtApellido">Apellido:</label>
+                                <input type="text" class="form-control" id="txtApellido">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtCedula">Cedula:</label>
+                                <input type="text" class="form-control" id="txtCedula">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtTelefono">Telefono:</label>
+                                <input type="text" class="form-control" id="txtTelefono">
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="Guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    @section scripts{
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+        <script>
+         var tabla_Cliente;
+
+            $(document).ready(function () {
+
+                tabla_Cliente = $('#tbCliente').DataTable({
+                "ajax": {
+                    "url": "@Url.Action("listar", "Cliente")",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                    "columns": [
+                    { "data": "ID_Cliente" },
+                    { "data": "Nombre" },
+                    { "data": "Apellido" },
+                    { "data": "Cedula" },
+                    { "data": "Telefono" }
+
+                    ],
+                    "language": {
+                        url: "https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json"
+                    },
+                dom: 'Bfrtip',
+                buttons: [
+                    {
+                        text: 'Agregar Nuevo',
+                        attr: { class: 'btn btn-primary btn-sm' },
+                        action: function (e, dt, node, config) {
+                            AbrirModal(0)
+                        }
+                    }, "print", "excel"
+                 ],
+
+                });
+
+                $('#tbCliente tbody').on('dblclick', 'tr', function () {
+                    var Cliente = {};
+                    Cliente.Nombre = $(this).children().eq('1').text();
+                    Cliente.Apellido = $(this).children().eq('2').text();
+                    Cliente.Cedula = $(this).children().eq('3').text();
+                    Cliente.Telefono = $(this).children().eq('4').text();
+                    Cliente.Codigo = $(this).children().eq('0').text();
+                    mostrarCliente(Cliente);
+                });
+
+            });
+
+            function mostrarCliente(Cliente)
+            {
+                $("#txtNombre").val(Cliente.Nombre);
+                $("#txtApellido").val(Cliente.Apellido);
+                $("#txtCedula").val(Cliente.Cedula);
+                $("#txtTelefono").val(Cliente.Telefono);
+                AbrirModal(Cliente.Codigo)
+            }
+
+          function AbrirModal($idCliente) {
+
+              $("#txtIdCliente").val($idCliente);
+
+              if ($idCliente == 0) {
+                $("#txtNombre").val("");
+                $("#txtApellido").val("");
+                $("#txtCedula").val("");
+                $("#txtTelefono").val("");
+              }
+
+              $('#formModal').modal('show');
+
+        }
+
+          function Eliminar($idCliente) {
+                if (confirm("¿Realmente desea eliminar?")) {
+
+                    jQuery.ajax({
+                        url: "@Url.Action("Elimina", "Cliente")" + "?idCliente=" + $idCliente,
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                                tabla_Cliente.ajax.reload();
+                        }
+                    });
+                }
+            }
+
+            function Guardar() {
+                if ($("#txtNombre").val().trim() == "") {
+                    swal("Mensaje", "Complete los campos", "warning");
+                    return;
+                }
+
+                if ($("#txtCedula").val().trim() == "") {
+                    swal("Mensaje", "Complete los campos", "warning");
+                    return;
+                }
+
+            var $data = {
+                OCliente: {
+                    ID_Cliente: $("#txtIdCliente").val(),
+                    Nombre: $("#txtNombre").val(),
+                    Apellido: $("#txtApellido").val(),
+                    Cedula: $("#txtCedula").val(),
+                    Telefono: $("#txtTelefono").val(),
+                    Direccion: $("#txtDireccion").val()
+                }
+            }
+
+            jQuery.ajax({
+                url: "@Url.Action("Guardar", "Cliente")",
+                type: "POST",
+                data: JSON.stringify($data),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                        tabla_Cliente.ajax.reload();
+                        $('#formModal').modal('hide');
+
+                },
+                error: function (error) {
+                    console.log(error)
+                },
+                beforeSend: function () {
+                }
+            });
+        }
+
+        </script>
+    }
+
+</body>
+</html>

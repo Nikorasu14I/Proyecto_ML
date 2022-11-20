@@ -1,0 +1,348 @@
+﻿
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+
+@section scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+
+    <script>
+        var Contador = 0;
+
+        $(document).ready(function () {
+
+
+        });
+
+        var total = 0;
+        var impuesto = 0;
+        var valor = 0;
+        var canti = 0;
+        var subtotal = 0;
+
+        function Guardar()
+        {
+            if ($("#TotalaPagar").val() == "" || $("#TotalaPagar").val() == 0) {
+                swal("Mensaje", "Complete los campos", "error");
+                return;
+            }
+
+            var i = 0;
+            var envio = "{Total:'" + $('#TotalaPagar').val() + "',";
+            $("#detalle tbody tr").each(function (index) {
+                if (i == 0) {
+                    envio += "ListadoDetalle:[{ID_Servicio:'" + $(this).find('td').eq(0).text() +
+                        "',Cantidad:'" + $(this).find('td').eq(2).text() +
+                        "',SubTotal:'" + $(this).find('td').eq(4).text() + "'}";
+                } else {
+                    envio += ",{ID_Servicio:'" + $(this).find('td').eq(0).text() +
+                        "',Cantidad:'" + $(this).find('td').eq(2).text() +
+                        "',SubTotal:'" + $(this).find('td').eq(4).text() + "'}"
+                }
+                i = 1;
+            });
+            envio += "]}";
+
+            var json = eval("(" + envio + ')');
+
+            $.ajax({
+                url: "@Url.Action("GuardarP", "Servicio")",
+                data: JSON.stringify(json),
+                type: "POST",
+                async: false,//this makes the ajax-call blocking
+                contentType: 'application/json;charset=UTF-8',
+                dataType: 'json',
+                success: function (response) {
+                    setTimeout(() => {
+                        var caracteristicas = "height=600,width=800,scrollTo,resizable=1,scrollbars=1,location=0";
+                        nueva = window.open("/Venta/Proforma?ID=" + parseInt(response), 'popup', caracteristicas);
+                    }, 2500);
+                    limpiarDetalle();
+                    limpiarProducto();
+                },
+                error: function (error) {
+
+                }
+            });
+        }
+
+        function AbrirModalSer() {
+            ListarServicios();
+            $('#tba tbody').on('dblclick', 'tr', function () {
+                var Cliente = {};
+                Cliente.Codigo = $(this).children().eq('0').text();
+                Cliente.Des = $(this).children().eq('1').text();
+                Cliente.Pre = $(this).children().eq('2').text();
+                mostrarServ(Cliente);
+            });
+            $('#ModalServicios').modal('show');
+        }
+
+        function mostrarServ(Cliente) {
+            $("#nombreproducto").val(Cliente.Des);
+            $("#precio").val(Cliente.Pre);
+            $("#idproducto").val(Cliente.Codigo);
+            $("#Cantidad").focus();
+            $('#ModalServicios').modal('hide');
+        }
+
+        function ListarServicios() {
+
+            if (Contador == 0)
+            {
+                Contador = 1;
+                Tabla_S = $('#tba').DataTable({
+                    "ajax": {
+                        "url": "@Url.Action("listar", "Servicio")",
+                        "type": "GET",
+                        "datatype": "json"
+                    },
+                    "columns": [
+                        { "data": "ID_Servicio" },
+                        { "data": "Descripcion" },
+                        { "data": "Precio" },
+                        { "data": "Categoria" }
+                    ],
+                    dom: 'Bfrtip',
+                });
+            }
+
+        }
+
+        function fn_agregar() {
+            //VALIDACION de stock y cantidad
+            if ($("#Cantidad").val().trim() == "") {
+                swal("Mensaje", "Complete los campos", "warning");
+                return;
+            }
+
+
+            if ($("#Cantidad").val() === 0) { }
+            else if ($("#Cantidad").val() > 0) { }
+            else { swal("Mensaje", "Cantidad no puede ser negativa", "error"); return; }
+
+            $('#tba tbody tr').each(function () {
+                var num;
+                num = $(this).find('td').eq('0').text();
+                if (num == $("#idproducto").val()) {
+                    var stock = $(this).find('td').eq('4').text();
+                    var cantidad = $("#Cantidad").val();
+                    stock = parseInt(stock) - parseInt(cantidad);
+                    $(this).children().eq('4').html(stock);
+                }
+            });
+
+            $('#detalle > tbody  > tr').each(function (index, tr) {
+                var fila = tr;
+                var id = $(fila).find("td").eq(0).html();
+
+                if (id == $("#idproducto").val()) {
+                    existe_codigo = true;
+                    valor = $(fila).find("td").eq(4).html();
+                    canti = $(fila).find("td").eq(2).html();
+                    restar();
+                    $(fila).fadeOut("normal", function () {
+                        $(fila).remove();
+                    });
+                    return;
+                }
+            });
+
+                AgregarDetalle();
+
+        };
+
+        function sumar() {
+            impuesto = (subtotal * 15) / 100;
+            total = total + (subtotal + impuesto);
+            $("#TotalaPagar").val(total);
+        }
+
+        function restar() {
+            total = total - valor ;
+            $("#TotalaPagar").val(total);
+        }
+
+        function limpiarProducto() {
+            $("#nombreproducto").val("");
+            $("#idproducto").val("");
+            $("#precio").val("");
+            $("#Cantidad").val("");
+        }
+
+        function AgregarDetalle() {
+
+            var y = 0;
+            y = $("#Cantidad").val();
+            y = parseInt(y) + parseInt(canti);
+
+            cadena = "<tr class= 'bg-white'>"
+            cadena = cadena + "<td>" + $("#idproducto").val() + "</td>";
+            cadena = cadena + "<td>" + $("#nombreproducto").val() + "</td>";
+            cadena = cadena + "<td>" + y + "</td>";
+            cadena = cadena + "<td>" + $("#precio").val() + "</td>";
+            var x = 0;
+            x = $("#precio").val();
+
+            subtotal = (x * y);
+            cadena = cadena + "<td>" + subtotal + "</td>"
+            cadena = cadena + "<td><a class='eliminar'><button class='btn btn-danger' type='button'><span class='fa fa-remove'></span></button></a></td>";
+            $("#detalle tbody").append(cadena);
+            sumar();
+            limpiarProducto();
+            cantidad = 0;
+            $("a[class='eliminar']").click(function () {
+                valor = $(this).parents("tr").find("td").eq(4).html();
+                var iva = (parseFloat(valor) * 15) / 100;
+                valor = parseFloat(valor) + parseFloat(iva);
+                $(this).parents("tr").fadeOut("normal", function () {
+                    $(this).remove();
+                    restar();
+                });
+            });
+        }
+
+    </script>
+
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Almacen</title>
+</head>
+<body>
+
+    <div class="card-body p-2 card-venta">
+        <div class="row mt-2">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="form-group mb-0">
+                            <label class="col-form-label col-form-label-sm"><font color="Blue">Detalle Servicio</font> </label>
+                        </div>
+                        <div class="row">
+                            <input id="txtIdProducto" type="hidden" value="0" />
+                            <div class="col-sm-9">
+                                <div class="form-group mb-0">
+                                    <label for="txtproductonombre" class="col-form-label col-form-label-sm">Descripcion:</label>
+                                    <input type="text" class="form-control form-control-sm model" id="nombreproducto" autocomplete="off" readonly>
+                                    <input type="hidden" class="form-control form-control-sm model" id="idproducto" autocomplete="off" readonly>
+
+                                </div>
+                            </div>
+
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label for="btnBuscarProducto" class="col-form-label col-form-label-sm invisible">Buscar:</label>
+                                    <button id="btnBuscarProducto" type="button" class="btn btn-sm btn-primary btn-block" onclick="AbrirModalSer()"><i class="fa fa-search" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label col-form-label-sm">En Stock:</label>
+                                    <input type="text" class="form-control form-control-sm model" id="stock" readonly>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label col-form-label-sm">Precio:</label>
+                                    <input type="text" class="form-control form-control-sm model" id="precio" readonly>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label col-form-label-sm">Cantidad: <span class="required">*</span></label>
+                                    <input style="background-color:#E0E0E0" type="text" class="form-control form-control-sm model" id="Cantidad" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label for="btnAsignar" class="col-form-label col-form-label-sm invisible">Buscar:</label>
+                                    <form action="javascript:fn_agregar()" ; method="post" id="frm_usu" class="form-horizontal">
+                                        <button id="btnAgregar" type="submit" class="btn btn-sm btn-success btn-block"><i class="fa fa-plus-circle" aria-hidden="true"></i> </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table id="detalle" class="lista table">
+        <thead style="font-size:14px;">
+            <tr class="bg-white">
+                <th><font color="blue">Detalle Compra</font></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr class="bg-white">
+                <th>Codigo</th>
+                <th>Descripcion del Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+
+    </table>
+
+    <table class="table">
+        <tr style="font-size:13px;" class="bg-white">
+            <th>
+                .
+            </th>
+            <th style="align-content:center">
+                Total
+                <input style="font-size:13px; font-weight:700;" class="form-control" type="text" name="TotalaPagar" id="TotalaPagar" required readonly />
+            </th>
+            <th>
+                Imprimir
+                <button type="button" class="btn btn-sm btn-primary btn-block form-control" onclick="Guardar()"><i class="fa fa-clipboard" aria-hidden="true"></i></button>
+            </th>
+        </tr>
+        
+    </table>
+
+    <div class="modal fade" id="ModalServicios" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 1250px!important;" role="document">
+            <div class="modal-content">
+               
+                <div class="modal-body">
+                    <div class="row m-4">
+                        <div class="col-sm-12">
+                            <div class="card">
+                                
+                                <div class="card-body">
+                                    <table id="tba" class="hover" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th><font color="blue">ID_Servicio</font></th>
+                                                <th><font color="blue">Descripcion</font></th>
+                                                <th><font color="blue">Precio</font></th>
+                                                <th><font color="blue">Categoria</font></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Clientes_Borrado</title>
+</head>
+<body>
+    <div class="row m-4">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    REGISTRO CLIENTES
+                </div>
+                <div class="card-body">
+                    <table class="display responsive nowrap" id="tbCliente" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Cedula</th>
+                                <th>Telefono</th>
+                                <th>Direccion</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+</html>
+
+
+@section scripts{
+
+    <script>
+         var tabla_Cliente;
+
+            $(document).ready(function () {
+
+                tabla_Cliente = $('#tbCliente').DataTable({
+                "ajax": {
+                    "url": "@Url.Action("listarD", "Cliente")",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "Nombre" },
+                    { "data": "Apellido" },
+                    { "data": "Cedula" },
+                    { "data": "Direccion" },
+                    { "data": "Telefono" }
+                   
+                ],
+                dom: 'Bfrtip'
+               @*  "language": {
+                     "url": "@Url.Content("~/Content/datatable/idioma/datatable.es-ES.json")"}*@
+
+            });
+        });
+    </script>
+    
+}

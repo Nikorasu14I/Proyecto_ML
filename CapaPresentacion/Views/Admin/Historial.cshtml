@@ -1,0 +1,218 @@
+﻿@{
+    ViewBag.Title = "Empleado";
+    Layout = "~/Views/Shared/_Layout_Admin.cshtml";
+}
+
+
+@section scripts{
+    <script>
+        var TablaAlmacen;
+        $(document).ready(function () {
+            TablaAlmacen = $('#tbalmacen').DataTable({
+                "ajax": {
+                    "url": "@Url.Action("listarFactura", "Servicio")",
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "ID_Servicio" },
+                    { "data": "Descripcion" },
+                    { "data": "Precio" },
+                    { "data": "Categoria" }
+                ],
+                "language": {
+                    url: "https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json"
+                },
+
+                dom: 'Bfrtip',
+                buttons: [
+                    'excel',
+                    'print'
+                ]
+            });
+
+            $('#tbalmacen tbody').on('dblclick', 'tr', function () {
+                var ID;
+
+                ID = $(this).children().eq('0').text();
+                var caracteristicas = "height=800,width=1000,scrollTo,resizable=1,scrollbars=1,location=0";
+                nueva = window.open("/Servicio/Factura?ID=" + parseInt(ID), '_blank');
+            });
+
+        });
+
+        function ListarServicio(ID)
+        {
+              TablaAlmacen = $('#tba').DataTable({
+                "ajax": {
+                      "url": "@Url.Action("listardetalle", "Servicio")" + "?id=" + ID,
+                    "type": "GET",
+                    "datatype": "json"
+                },
+                "columns": [
+                    { "data": "Descripcion" },
+                    { "data": "Precio" },
+                    { "data": "Cantidad" },
+                     { "data": "ID_Servicio" }
+                ],
+                dom: 'Bfrtip',
+
+            });
+            $('#formModal').modal('show');
+
+        }
+
+        function AbrirModal($idAlmacen)
+        {
+          $("#txtIdProducto").val($idAlmacen);
+             // var $ID_Categoria = document.getElementById("Categoria").value;
+
+            if ($idAlmacen != 0) {
+
+                jQuery.ajax({
+                    url: "@Url.Action("Obtener","Servicio")" + "?idAlmacen=" + $idAlmacen,
+                    type: "GET",
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+
+                        if (data != null) {
+
+                            $("#txtDescripcion").val(data.Descripcion);
+                            $("#txtPrecio").val(data.Precio);
+                            $ID_Categoria.val(data.ID_Categoria);
+                            $("#txtCantidad").val(data.Cantidad);
+                        }
+
+                    }
+                });
+              }
+              else {
+                $("#txtDescripcion").val("");
+                $("#txtPrecio").val("");
+                  $("#txtCantidad").val("");
+            }
+
+              $('#formModal').modal('show');
+
+        }
+
+         function Eliminar($idAlmacen) {
+                console.log = $idAlmacen
+                if (confirm("¿Realmente desea eliminar?")) {
+
+                    jQuery.ajax({
+                        url: "@Url.Action("Eliminar", "Servicio")" + "?idAlmacen=" + $idAlmacen,
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            TablaAlmacen.ajax.reload();
+                        }
+                    });
+                }
+            }
+
+        function Guardar() {
+            var ID_Categoria = document.getElementById("Categoria").value;
+            var $data = {
+                OAlmacen: {
+                    ID_Servicio: parseInt($("#txtIdProducto").val()),
+                    Descripcion: $("#txtDescripcion").val(),
+                    Precio: $("#txtPrecio").val(),
+                    ID_Categoria: ID_Categoria.val(),
+                    Cantidad: $("#txtCantidad").val()
+                }
+
+            }
+
+            jQuery.ajax({
+                url: "@Url.Action("Guardar", "Cliente")",
+                type: "POST",
+                data: JSON.stringify($data),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    TablaAlmacen.ajax.reload();
+                    $('#formModal').modal('hide');
+
+                },
+                error: function (error) {
+                    console.log(error)
+                },
+                beforeSend: function () {
+                }
+            });
+        }
+    </script>
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Almacen</title>
+</head>
+<body>
+
+    <div class="row m-4">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    REGISTRO EVENTOS
+                </div>
+                <div class="card-body">
+                    <table class="hover" id="tbalmacen" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th><font color="blue">ID Factura</font></th>
+                                <th><font color="blue">Nombre</font></th>
+                                <th><font color="blue">Total</font></th>
+                                <th><font color="blue">Fecha</font></th>
+
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 1300px!important;" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                </div>
+                <div class="modal-body">
+
+                    <div class="row m-4">
+                        <div class="col-sm-12">
+                            <div class="card">
+                                <div class="card-header">
+                                </div>
+                                <div class="card-body">
+                                    <table class="display responsive nowrap" id="tba" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th>Descripcion</th>
+                                                <th>Precio</th>
+                                                <th>Cantidad</th>
+                                                <th>Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="Guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,160 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+@using Model.Entity
+@model List<Servicios>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]SAFE</title>
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="~/Content/adminlte/plugins/fontawesome-free/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="~/Content/adminlte/dist/css/adminlte.min.css">
+
+</head>
+
+
+<body id="seleccion">
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/Data/css")
+
+
+    <script type="text/javascript">
+        function imprimir() {
+            var printContents = document.getElementById("seleccion").innerHTML;
+            var originalContents = document.body.innerHTML;
+
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+        }
+    </script>
+
+    <div style="font-size: 11px; text-align: right;">
+        <center>
+            <button type="button" onclick="javascript: imprimir()">IMPRIMIR</button>
+        </center>
+    </div>
+
+    <div >
+        <center>
+            <div>
+
+                <table class="bg-white" style="width: 650px; border:0.5px solid #000;padding: 10px;" border="0">
+
+                    <tbody>
+                        <tr class="rainbow-linear-gradient">
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <img height="180" src="~/Content/Img/MLN.jpeg" />
+                            </td>
+                            <td>
+                                <table style="width: 100%; height: 120px; font-weight: bold; ">
+                                    <tr style="font-size:18px;"><td align="right"> Proforma</td></tr>
+                                </table>
+                            </td>
+                            <td colspan="4" rowspan="4" align="center" style="vertical-align: top;">
+                                <table style="width: 100%; height: 120px; font-weight: bold; ">
+                                    <tr style="font-size:19px;"><td align="right">PRODUCCION DE EVENTOS </td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">Direccion Km 8 1/2 Carretera Norte, Camilo Chamorro</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">Veterinaria Antares Cuadra y media al norte. M/D</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">C: 8656 - 5128 | M: 8882 - 4978</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"><font color="gray">grupomlproduccioneventos@gmail.com</font></td></tr>
+                                    <tr style="font-size:9px;"><td align="right"> RUC 0012802770057K</td></tr>
+                                </table>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="4" align="center"><span id="direcciontienda"></span></td>
+                        </tr>
+                        <tr style="height: 20px;"><td colspan="6"><br /></td></tr>
+                        <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+                        <tr>
+                            <td colspan="6">
+                                <table style=" width: 100%; " border="0">
+                                    <tr>
+                                        <td colspan="1" style="width: 50px; font-weight: bold; ">Cliente:</td>
+                                        <td colspan="5" style="border-bottom:1px solid #000"><span id="nombrecliente">Cliente General</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="1" style="width: 50px; font-weight: bold;">Fecha:</td>
+                                        <td colspan="5" style="border-bottom:1px solid #000"><span id="direccioncliente">@ViewData["Fecha"]</span></td>
+                                    </tr>
+                                   
+                                   
+                                </table>
+                            </td>
+                        </tr>
+
+                        <tr style="height: 10px;"></tr>
+                        <tr>
+                            <td colspan="6">
+                                <table id="tbVentas" border="1" style="width: 100%;">
+                                    <thead>
+                                        <tr bgcolor="#D9D9D9">
+                                            <th style="width: 15%;">Cant</th>
+                                            <th style="width: 45%;">Descripcion</th>
+                                            <th style="width: 20%;">P.Unitario</th>
+                                            <th style="width: 20%;">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var objCliente in Model)
+                                        {
+                                            <tr>
+                                                <td>@objCliente.Cantidad</td>
+                                                <td>@objCliente.Descripcion</td>
+                                                <td>@objCliente.Precio</td>
+                                                <td>@objCliente.ID_Servicio</td>
+
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr style="height: 10px;"><td colspan="6"><br /><br /></td></tr>
+                        <tr>
+                            <td colspan="4">
+                                <table width='250' border='1'>
+                                    <tr style='border:1px solid black;'>
+                                    </tr>
+                                </table>
+                            </td>
+                            <td colspan="2" align="right">
+                                <table style="font-weight: bold; width: 150px;">
+                                   
+                                    <tr>
+                                        <td>Total S/.</td>
+                                        <td bgcolor="#D9D9D9" style="border:1px solid black;"><span id="totalcosto">@ViewData["Total"]</span></td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </center>
+    </div>
+</body>
+</html>
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/bootstra")
+@Scripts.Render("~/Content/Data/js")
+@Scripts.Render("~/bundles/complementos")
+
+<!--<script src="~/Content/adminlte/plugins/jquery/jquery.min.js"></script>-->
+<!-- Bootstrap 4 -->
+<!--<script src="~/Content/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>-->
+<!-- AdminLTE App -->
+<!--<script src="~/Content/adminlte/dist/js/adminlte.min.js"></script>-->

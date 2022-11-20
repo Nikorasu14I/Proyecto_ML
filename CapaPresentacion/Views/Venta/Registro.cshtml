@@ -1,0 +1,1342 @@
+﻿ @using Model.Entity
+@model List<Servicios>
+
+<script src="~/Content/js/alertify.min.js"></script>
+<link href="~/Content/css/alertify.core.css" rel="stylesheet" />
+<link href="~/Content/css/alertify.default.css" rel="stylesheet" />
+<link href="~/Content/css/mdtimepicker.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
+
+@section scripts{
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="~/Content/js/mdtimepicker.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <script type="text/javascript">
+        var Contador = 0;
+        var contador = 0;
+
+        var seleccion;
+
+        $(document).ready(function () {
+
+            $("#fecha_evento").flatpickr({
+                minDate: "today",
+                dateFormat: "Y-m-d"
+            });
+
+            $('#hora_inicio').mdtimepicker();
+
+            $('#hora_fin').mdtimepicker();
+
+            $("#fecha_evento").change(function () {
+                limpiarDetalle();
+                limpiarProducto();
+                TotalNuevo();
+                if (Contador == 1) {
+                    RecargarServ();
+                    $('#ModalServicios').modal('show');
+                }
+            });
+
+            $("#Cantidad").keypress(function (e) {
+                var keycode = (e.keyCode ? e.keyCode : e.which);
+                if (keycode == '13')
+                {
+                    fn_agregar();
+                }
+            });
+
+            $("#Codigo").keypress(function (e) {
+                var keycode = (e.keyCode ? e.keyCode : e.which);
+                if (keycode == '13') {
+                    escaner();
+                }
+            });
+
+            $("#Pago").change(function () {
+                var cambio = 0;
+                cambio = $("#Pago").val() - $("#TotalaPagar").val();
+                $("#Cambio").val(cambio);
+            });
+
+            $('#tba tbody').on('dblclick', 'tr', function () {
+                var Cliente = {};
+                Cliente.Codigo = $(this).children().eq('0').text();
+                Cliente.Des = $(this).children().eq('1').text();
+                Cliente.Pre = $(this).children().eq('2').text();
+                Cliente.Sto = $(this).children().eq('4').text();
+                mostrarServ(Cliente);
+            });
+
+            $('#tbc tbody').on('dblclick', 'tr', function () {
+                var Cliente = {};
+                Cliente.Codigo = $(this).children().eq('0').text();
+                Cliente.Datos = $(this).children().eq('1').text() + " " +
+                    $(this).children().eq('2').text();
+                Cliente.Cedula = $(this).children().eq('3').text();
+                mostrarCliente(Cliente);
+            });
+
+            $("#finalizar").click(function () {
+                //VALIDACIONES DE CLIENTE
+                if ($("#txtnombre").val().trim() == "") {
+                    swal("Mensaje", "Complete los campos", "warning");
+                    return;
+                }
+
+                var i = 0;
+                var envio = "{Fecha:'" + $("#fecha_evento").val() + "',Fecha_F:'" + $("#fecha_evento").val() + "',Hora_I:'" + $("#hora_inicio").val()
+                    + "',Hora_F:'" + $("#hora_inicio").val() + "',Observacion:'" + $("#observacion").val()  + "',Direccion:'" + $("#Direccion").val() + "',ID_Empleado:'" + 1 + "',ID_Cliente:'"
+                    + $("#codigoCliente").val() + "',Total:'" + $('#TotalaPagar').val() + "',";
+                $("#detalle tbody tr").each(function (index) {
+                    if (i == 0) {
+                        envio += "ListadoDetalle:[{ID_Servicio:'" + $(this).find('td').eq(0).text() +
+                            "',Cantidad:'" + $(this).find('td').eq(2).text() +
+                            "',SubTotal:'" + $(this).find('td').eq(4).text() + "'}";
+                    } else {
+                        envio += ",{ID_Servicio:'" + $(this).find('td').eq(0).text() +
+                            "',Cantidad:'" + $(this).find('td').eq(2).text() +
+                            "',SubTotal:'" + $(this).find('td').eq(4).text() + "'}"
+                    }
+                    i = 1;
+                });
+                envio += "]}";
+
+                var json = eval("(" + envio + ')');
+
+                console.info(json);
+                $.ajax({
+                    url: "GuardarVenta",
+                    data: JSON.stringify(json),
+                    type: "POST",
+                    async: false,//this makes the ajax-call blocking
+                    contentType: 'application/json;charset=UTF-8',
+                    dataType: 'json',
+                    success: function (response) {
+                        swal("Evento Guardado", "", "success");
+                        setTimeout(() => {
+                             ID_Factura = response;
+                            $('#ModalFin').modal('show');
+                        }, 2500);
+                        limpiarCliente();
+                        limpiarDetalle();
+                        limpiarProducto();
+                    },
+                    error: function (error) {
+                        alertify.alert(error);
+                    }
+                });
+            });
+            //botones
+
+        });
+        //variables
+        var total = 0;
+        var valor = 0;
+        var canti = 0;
+        var subtotal = 0;
+        var Tabla_Cliente;
+        var Tabla_S;
+        var Descuento;
+        var Adelanto;
+        var ID_Factura = 0;
+        var ID_Recibo = 0;
+        var ID_Evento = 0;
+        var Efectivo = 0;
+        var Metodo = "Efectivo";
+        var Cheque = 0;
+        var TotalD = 0;
+
+        function Generar()
+        {
+            //VALIDACIONES DE CLIENTE
+            if (parseFloat($("#Adelanto").val()) < (parseFloat($("#TI").val())  * 50 / 100)) {
+                swal("Mensaje", "El minimo establecido es el 50% del valor total", "error");
+                return;
+            }
+
+            if (Metodo == "Efectivo y Cheque" && parseFloat($("#Adelanto").val()) != (parseFloat($('#PCheque').val()) + parseFloat($('#PEfec').val()) )){
+                swal("Mensaje", "El Monto debe sumar lo mismo que el adelanto", "error");
+                return;
+            }
+
+            Adelanto = $('#Adelanto').val();
+            if (Metodo == "Efectivo") {
+                Efectivo = $('#Adelanto').val();
+                Cheque = 0;
+                $("#Banco").val("No Aplica")
+            } else if (Metodo == "Cheque") {
+                Cheque = $('#Adelanto').val();
+                Efectivo = 0;
+            }
+            else if (Metodo == "Efectivo y Cheque")
+            {
+                Efectivo = $('#PEfec').val();
+                Cheque = $('#PCheque').val();
+            }
+            var f = new Date();
+            var FechaF = (f.getFullYear() + "/" + (f.getMonth() + 1) + "/" + f.getDate());
+            var i = 0;
+            var envio = "{Fecha:'" + $("#fecha_evento").val() + "',Descuento:'" + Descuento + "',FechaF:'" + FechaF + "',Adelanto:'" + Adelanto + "',Hora_I:'" + $("#hora_inicio").val()
+                + "',Hora_F:'" + $("#hora_fin").val() + "',Observacion:'" + $("#observacion").val() + "',Direccion:'" + $("#Direccion").val() + "',ID_Empleado:'" + 1
+                + "',ID_Cliente:'" + $("#codigoCliente").val() + "',Metodo:'"
+                + Metodo + "',Efectivo:'" + Efectivo + "',Cheque:'" + Cheque + "',Banco:'" + $("#Banco").val() + "',Concepto:'" + $("#Concepto").val()  + "',Total:'" + $('#TotalaPagar').val() + "',";
+            $("#detalle tbody tr").each(function (index) {
+                if (i == 0) {
+                    envio += "ListadoDetalle:[{ID_Servicio:'" + $(this).find('td').eq(0).text() +
+                        "',Cantidad:'" + $(this).find('td').eq(2).text() +
+                        "',SubTotal:'" + $(this).find('td').eq(4).text() + "'}";
+                } else {
+                    envio += ",{ID_Servicio:'" + $(this).find('td').eq(0).text() +
+                        "',Cantidad:'" + $(this).find('td').eq(2).text() +
+                        "',SubTotal:'" + $(this).find('td').eq(4).text() + "'}"
+                }
+                i = 1;
+            });
+            envio += "]}";
+
+            var json = eval("(" + envio + ')');
+
+            console.info(json);
+            $.ajax({
+                url: "GuardarVenta",
+                data: JSON.stringify(json),
+                type: "POST",
+                async: false,//this makes the ajax-call blocking
+                contentType: 'application/json;charset=UTF-8',
+                dataType: 'json',
+                success: function (response) {
+                    setTimeout(() => {
+                        ID_Factura = response.Total;
+                        ID_Evento = response.Impuesto;
+                        ID_Recibo = response.Descuento;
+                        $('#ModalRecibo').modal('hide');
+                        $('#ModalFin').modal('show');
+                    }, 1500);
+                    limpiarCliente();
+                    limpiarDetalle();
+                    limpiarProducto();
+                },
+                error: function (error) {
+                    alertify.alert(error);
+                }
+            });
+        }
+
+        function Alerta()
+        {
+            //VALIDACIONES DE CLIENTE
+            $('#ModalRecibo').modal('hide');
+            $('#SDescuento').change(function () {
+                var selection = document.getElementById("SDescuento");
+                $('#Descuento').val((parseInt($('#TotalaPagar').val()) * parseInt(selection.options[selection.selectedIndex].value)) / 100);
+            });
+            $('#Descuento').val(0.00);
+            $('#ModalDescuento').modal('show');
+        }
+
+        function AlertaA() {
+            $('#ModalDescuento').modal('hide');
+            Descuento = parseInt($('#Descuento').val());
+            TotalD = parseInt($('#TotalaPagar').val()) - parseInt(Descuento);
+            $('#TI').val((parseInt(TotalD) + (parseInt(TotalD) * 15) / 100));
+            $('#Smetodo').change(function () {
+                if ($(this).val() === "Cheque") {
+                    Metodo = $(this).val();
+                    console.log(Metodo);
+                    var x = document.getElementById("Cheque");
+                    x.style.display = "block";
+                    var x = document.getElementById("Metodos");
+                    x.style.display = "none";
+                    $('#Efectivo').val(0.00);
+                    $('#PCheque').val(0.00);
+                } else if ($(this).val() === "Efectivo y Cheque") {
+                    Metodo = $(this).val();
+                    console.log(Metodo);
+                    var x = document.getElementById("Cheque");
+                    x.style.display = "block";
+                    var x = document.getElementById("Metodos");
+                    x.style.display = "block";
+                } else if ($(this).val() === "Efectivo"){
+                    Metodo = $(this).val();
+                    console.log(Metodo);
+                    $('#Efectivo').val(0.00);
+                    $('#Banco').val("");
+                    $('#PCheque').val(0.00);
+                    var x = document.getElementById("Cheque");
+                    x.style.display = "none";
+                    var x = document.getElementById("Metodos");
+                    x.style.display = "none";}
+            });
+            $('#SAdelanto').change(function () {
+                var selection = document.getElementById("SAdelanto");
+                $('#Adelanto').val((parseFloat(TotalD) + ((parseFloat(TotalD) * 15) / 100)) * parseInt(selection.options[selection.selectedIndex].value) / 100);
+            });
+            $('#Adelanto').val((parseFloat(TotalD) + ((parseFloat(TotalD) * 15) / 100)) * 50 / 100);
+            $('#ModalRecibo').modal('show');
+        }
+
+        function Observacion()
+        {
+            $('#Observacion').modal('show');
+        }
+
+        function ImprimirF()
+        {
+            var caracteristicas = "height=600,width=800,scrollTo,resizable=1,scrollbars=1,location=0";
+            nueva = window.open("/Venta/Factura?ID=" + parseInt(ID_Factura), '_blank');
+        }
+
+        function ImprimirO() {
+            var caracteristicas = "height=600,width=800,scrollTo,resizable=1,scrollbars=1,location=0";
+            nueva = window.open("/Venta/Contrato?ID=" + parseInt(ID_Evento), '_blank');
+        }
+
+        function ImprimirR() {
+            var caracteristicas = "height=600,width=800,scrollTo,resizable=1,scrollbars=1,location=0";
+            nueva = window.open("/Servicio/Recibo?ID=" + parseInt(ID_Recibo), '_blank');
+        }
+
+        function RecargarServ() {
+            Tabla_S.ajax.reload();
+        }
+
+        function TotalNuevo() {
+            total = 0;
+            valor = 0;
+            subtotal = 0;
+        }
+
+        function mostrarCliente(Cliente) {
+            $("#txtnombre").val(Cliente.Datos);
+            $("#idCliente").val(Cliente.Cedula);
+            $("#codigoCliente").val(Cliente.Codigo);
+            $('#ModalCliente').modal('hide');
+        }
+
+        function mostrarServ(Cliente) {
+            $("#nombreproducto").val(Cliente.Des);
+            $("#precio").val(Cliente.Pre);
+            $("#idproducto").val(Cliente.Codigo);
+            $("#stock").val(Cliente.Sto);
+            $("#Cantidad").focus();
+            $('#ModalServicios').modal('hide');
+            $("#Cantidad").focus();
+        }
+
+        function fn_agregar() {
+            //VALIDACION de stock y cantidad
+            if ($("#stock").val().trim() == "") {
+                swal("Mensaje", "Seleccione un producto", "warning");
+                return;
+            }
+
+            if (parseInt($("#stock").val()) < parseInt($("#Cantidad").val())) {
+                swal("Mensaje", "Productos Insuficientes", "error");
+                return;
+            }
+            console.log($("#stock").val());
+            console.log($("#Cantidad").val());
+
+            if ($("#Cantidad").val() === 0) {            }
+            else if ($("#Cantidad").val() > 0) { }
+            else { swal("Mensaje", "Cantidad no puede ser negativa", "error"); return; }
+
+            $('#tba tbody tr').each(function () {
+                var num;
+                num = $(this).find('td').eq('0').text();
+                if (num == $("#idproducto").val()) {
+                    var stock = $(this).find('td').eq('4').text();
+                    var cantidad = $("#Cantidad").val();
+                    stock = parseInt(stock) - parseInt(cantidad);
+                    $(this).children().eq('4').html(stock);
+                }
+             });
+
+            var existe_codigo = false;
+            $('#detalle > tbody  > tr').each(function (index, tr) {
+                var fila = tr;
+                var id = $(fila).find("td").eq(0).html();
+
+                if (id == $("#idproducto").val()) {
+                    existe_codigo = true;
+                    valor = $(fila).find("td").eq(4).html();
+                    canti = "";
+                    canti = $(fila).find("td").eq(2).html();
+                    restar();
+                    $(fila).fadeOut("normal", function () {
+                        $(fila).remove();
+                    });
+                    return;
+                }
+            });
+
+            if (!existe_codigo) {
+                AgregarDetalle();
+            }
+            else
+            {
+                AgregarDetalle();
+            }
+        };
+
+        function AgregarDetalle()
+        {
+            var y = 0;
+            y = $("#Cantidad").val();
+            y = parseInt(y) + parseInt(canti);
+
+            cadena = "<tr class= 'bg-white'>"
+            cadena = cadena + "<td>" + $("#idproducto").val() + "</td>";
+            cadena = cadena + "<td>" + $("#nombreproducto").val() + "</td>";
+            cadena = cadena + "<td>" + y + "</td>";
+            cadena = cadena + "<td>" + $("#precio").val() + "</td>";
+            var x = 0;
+            x = $("#precio").val();
+
+            subtotal = (x * y);
+            cadena = cadena + "<td>" + subtotal + "</td>"
+            cadena = cadena + "<td><a class='eliminar'><button class='btn btn-danger' type='button'><span class='fa fa-remove'></span></button></a></td>";
+            $("#detalle tbody").append(cadena);
+            sumar();
+            limpiarProducto();
+            cantidad = 0;
+            $("a[class='eliminar']").click(function () {
+                var ID = $(this).parents("tr").find("td").eq(0).html();
+                valor = $(this).parents("tr").find("td").eq(4).html();
+                var cantidad = $(this).parents("tr").find("td").eq(2).html();
+                $('#tba tbody tr').each(function () {
+                    var num;
+                    num = $(this).find('td').eq('0').text();
+                    if (num == ID) {
+                        var stoc = $(this).find('td').eq('4').text();
+                        stoc = parseInt(stoc) + parseInt(cantidad);
+                        $(this).children().eq('4').html(stoc);
+                    }
+                });
+                $(this).parents("tr").fadeOut("normal", function () {
+                    $(this).remove();
+                    restar();
+                });
+            });
+
+        }
+
+        function AgregarProducto() {
+
+            jQuery.ajax({
+                type: "POST",
+                url: '/Venta/Seleccionar',
+                data: {
+                    ID_Servicio: seleccion
+                },
+                success: function (mensaje) {
+
+                    //$("#idproducto").val(mensaje.Nombre);
+                    $(mensaje).each(function (index, item) {
+                        //recibir datos json
+                        $("#nombreproducto").val(item.Descripcion),
+                            $("#idproducto").val(item.ID_Servicio),
+                            $("#precio").val(item.Precio),
+                            $("Cantidad").focus();
+
+                    });
+                }
+            });
+        }
+
+        function AbrirModal($idCliente) {
+
+            $("#txtIdCliente").val($idCliente);
+            {
+                $("#txtNombre").val("");
+                $("#txtApellido").val("");
+                $("#txtCedula").val("");
+                $("#txtTelefono").val("");
+                $("#txtDireccion").val("");
+                $('#formModal').modal('show');
+            }
+        }
+
+        function AbrirModalScan() {
+            $('#Escaner').modal('show');
+            $('#Codigo').focus();
+        }
+
+        function ListarServicios() {
+
+            if (Contador == 0)
+            {
+                Contador = 1;
+                FechaEvento = $("#fecha_evento").val();
+                FechaFactura = $("#id_fecha").val();
+                Tabla_S = $('#tba').DataTable({
+                    "ajax": {
+                        "url": "@Url.Action("listarDisponible", "Servicio")" + "?FechaE=" + $("#fecha_evento").val() ,
+                        "type": "GET",
+                        "datatype": "json"
+                    },
+                    "columns": [
+                        { "data": "ID_Servicio" },
+                        { "data": "Descripcion" },
+                        { "data": "Precio" },
+                        { "data": "Categoria" },
+                        { "data": "Cantidad" }
+                    ],
+                    "language": {
+                        url: "https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json"
+                    },
+
+                    dom: 'Bfrtip',
+                    buttons: [
+                        'excel',
+                        'print'
+                    ]
+
+                });
+            }
+            else
+            {
+
+            }
+        }
+
+        function ListarCliente() {
+
+             if (contador == 0)
+            {
+                 contador = 1;
+                 Tabla_Cliente = $('#tbc').DataTable({
+                    "ajax": {
+                        "url": "@Url.Action("listarC", "Cliente")",
+                        "type": "GET",
+                        "datatype": "json"
+                    },
+                    "columns": [
+                        { "data": "ID_Cliente" },
+                        { "data": "Nombre" },
+                        { "data": "Apellido" },
+                        { "data": "Cedula" },
+
+                         { "data": "Telefono" }
+                    ],
+                     "language": {
+                         url: "https://cdn.datatables.net/plug-ins/1.12.1/i18n/es-ES.json"
+                     },
+
+                     dom: 'Bfrtip',
+                     buttons: [
+                         {
+                             text: 'Codigo de Barras',
+                             attr: { class: 'btn btn-primary btn-sm' },
+                             action: function (e, dt, node, config) {
+                                 $('#ModalCliente').modal('hide');
+                                 AbrirModalScan()
+                             }
+                         },
+                         'excel',
+                         'print'
+
+                     ]
+                });
+            }
+            else
+             {
+             }
+        }
+
+        function AbrirModalCliente() {
+            ListarCliente();
+            $('#tbc tbody').on('dblclick', 'tr', function () {
+                var Cliente = {};
+                Cliente.Codigo = $(this).children().eq('0').text();
+                Cliente.Datos = $(this).children().eq('1').text() + " " +
+                    $(this).children().eq('2').text();
+                Cliente.Cedula = $(this).children().eq('3').text();
+                mostrarCliente(Cliente);
+            });
+            $('#ModalCliente').modal('show');
+        }
+
+        function AbrirModalSer() {
+            //VALIDACION de fecha
+            if ($("#fecha_evento").val().trim() == "") {
+                swal("Mensaje", "Seleccione una fecha", "warning");
+                return;
+            }
+            ListarServicios();
+            $('#tba tbody').on('dblclick', 'tr', function () {
+                var Cliente = {};
+                Cliente.Codigo = $(this).children().eq('0').text();
+                Cliente.Des = $(this).children().eq('1').text();
+                Cliente.Pre = $(this).children().eq('2').text();
+                Cliente.Sto = $(this).children().eq('4').text();
+
+                mostrarServ(Cliente);
+            });
+           /* ProductoLoad();*/
+            $('#ModalServicios').modal('show');
+
+        }
+
+        function Abrircontrato() {
+            document.getElementById('nombreC').innerHTML = $("#txtnombre").val();
+            document.getElementById('direccionC').innerHTML = $("#Direccion").val();
+            document.getElementById('fechaC').innerHTML = $("#fecha_evento").val();
+            document.getElementById('horaC').innerHTML = $("#hora_inicio").val();
+            document.getElementById('totalC').innerHTML = $("#TotalaPagar").val();
+            document.getElementById('observacionC').innerHTML = $("#observacion").val();
+            var f = new Date();
+            document.getElementById('diaC').innerHTML = (f.getDate());
+            document.getElementById('mesC').innerHTML = ((f.getMonth() + 1));
+            document.getElementById('añoC').innerHTML = (f.getFullYear());
+
+            $('#contrato').modal('show');
+        }
+
+        function limpiarProducto() {
+            $("#nombreproducto").val("");
+            $("#idproducto").val("");
+            $("#precio").val("");
+            $("#stock").val("");
+            $("#Cantidad").val("");
+        }
+
+        function limpiarCliente() {
+            $("#txtnombre").val("");
+            $("#idCliente").val("");
+            $("#codigoCliente").val("");
+        }
+
+        function limpiarDetalle() {
+            $("#detalle tbody tr").remove();
+        }
+
+        function sumar() {
+            total = total + subtotal;
+            $("#TotalaPagar").val(total);
+            $("#TotalIva").val(((total * 15) / 100) + total);
+        }
+
+        function restar() {
+            total = total - valor;
+            $("#TotalaPagar").val(total);
+            $("#TotalIva").val(((total * 15) / 100) + total);
+        }
+
+        function GuardarO() {
+            $('#Observacion').modal('hide');
+            document.getElementById('observacionC').innerHTML = $("#observacion").val();
+            document.getElementById('direccionC').innerHTML = $("#Direccion").val();
+
+        }
+
+        function Hecho() {
+            $('#ModalFin').modal('hide');
+            swal("Mensaje", "Evento Guardado", "success")
+            setTimeout(() => {
+                window.location.href = '/Venta/Registro';
+            }, 2000);
+        }
+
+        function escaner() {
+            var $data = {
+                OCliente: {               
+                    Cedula: $("#Codigo").val(),
+                }
+            }
+
+            jQuery.ajax({
+                url: "@Url.Action("Buscar", "Cliente")",
+                type: "POST",
+                data: JSON.stringify($data),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $("#codigoCliente").val(data.ID_Cliente);
+                    $("#txtnombre").val(data.Nombre);
+                    $("#idCliente").val($("#Codigo").val());
+                    $('#Escaner').modal('hide');
+                    Tabla_Cliente.ajax.reload();
+                },
+                error: function (error) {
+                    swal("Mensaje", "Cliente no encontrado", "error")
+                },
+                beforeSend: function () {
+                }
+            });
+        }
+
+        function Guardar() {
+            var $data = {
+                OCliente: {
+                    Nombre: $("#Nombre").val(),
+                    Apellido: $("#txtApellido").val(),
+                    Cedula: $("#txtCedula").val(),
+                    Telefono: $("#txtTelefono").val()
+                }
+            }
+
+            jQuery.ajax({
+                url: "@Url.Action("InsertR", "Cliente")",
+                type: "POST",
+                data: JSON.stringify($data),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $("#codigoCliente").val(data);
+                    $("#txtnombre").val($data.OCliente.Nombre + ' ' + $data.OCliente.Apellido);
+                    $("#idCliente").val($("#txtCedula").val());
+                    $('#formModal').modal('hide');
+                    Tabla_Cliente.ajax.reload();
+                },
+                error: function (error) {
+                    console.log(error)
+                },
+                beforeSend: function () {
+                }
+            });
+        }
+
+    </script>
+}
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Registro</title>
+</head>
+<body>
+
+    <table id="encabezado" class="table">
+        <thead>
+            <tr style="font-size:13px;" class="bg-white">
+                <th>
+                    <font color="Blue">Detalle Evento</font>
+                </th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr style="font-size:13px;" class="bg-white">
+                <th>
+                    Fecha de Evento
+                    <input style="color:black; font-size:13px;" class="form-control" type="text" id="fecha_evento" />
+                </th>
+                <th>
+                    Hora de Inicio
+                    <input style="color:black; font-size:13px;" class="form-control" type="text" id="hora_inicio" />
+                </th>
+                <th>
+                    Hora de Fin
+                    <input style="color:black; font-size:13px;" class="form-control" type="text" id="hora_fin" />
+                </th>
+                <th>
+                    Contrato
+                    <button type="button" class="btn btn-sm btn-primary btn-block form-control" onclick="Observacion()"><i class="fa fa-clipboard" aria-hidden="true"></i></button>
+                </th>
+            </tr>
+
+        </thead>
+    </table>
+
+    <div class="card-body p-2 card-venta">
+        <div class="row mt-2">
+            <div class="col-sm-5">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="form-group mb-0">
+                            <label class="col-form-label col-form-label-sm"><font color="Blue">Detalle Cliente</font> </label>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label col-form-label-sm">Nombre:  </label>
+                                    <input type="text" class="form-control form-control-sm model" id="txtnombre" readonly>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+
+                                <div class="form-group mb-0">
+                                    <label for="btnBuscarCliente" class="col-form-label col-form-label-sm invisible">Buscar:</label>
+                                    <button id="btnBuscarCliente" type="button" class="btn btn-sm btn-primary btn-block" onclick="AbrirModalCliente()"><i class="fa fa-search" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <div class="form-group mb-0">
+                                    <label for="txtRazonSocialProveedor" class="col-form-label col-form-label-sm">Cedula:</label>
+                                    <input type="text" class="form-control form-control-sm model" id="idCliente" readonly>
+                                    <input type="hidden" id="codigoCliente">
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group mb-0">
+                                    <label for="btnAsignar" class="col-form-label col-form-label-sm invisible">Buscar:</label>
+                                    <button id="btnAgregar" type="button" onclick="AbrirModal()" class="btn btn-sm btn-success btn-block"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-7">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="form-group mb-0">
+                            <label for="txtRazonSocialProveedor" class="col-form-label col-form-label-sm"><font color="Blue">Detalle Servicio</font> </label>
+                        </div>
+                        <div class="row">
+                            <input id="txtIdProducto" type="hidden" value="0" />
+
+                            <div class="col-sm-9">
+                                <div class="form-group mb-0">
+                                    <label for="txtproductonombre" class="col-form-label col-form-label-sm">Descripcion:</label>
+                                    <input type="text" class="form-control form-control-sm model" id="nombreproducto" autocomplete="off" readonly>
+                                    <input type="hidden" class="form-control form-control-sm model" id="idproducto" autocomplete="off" readonly>
+
+                                </div>
+                            </div>
+
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label for="btnBuscarProducto" class="col-form-label col-form-label-sm invisible">Buscar:</label>
+                                    <button id="btnBuscarProducto" type="button" class="btn btn-sm btn-primary btn-block" onclick="AbrirModalSer()"><i class="fa fa-search" aria-hidden="true"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label col-form-label-sm">En Stock:</label>
+                                    <input type="text" class="form-control form-control-sm model" id="stock" autocomplete="off" readonly>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label col-form-label-sm">Precio:</label>
+                                    <input type="text" class="form-control form-control-sm model" id="precio" autocomplete="off" readonly>
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label class="col-form-label col-form-label-sm">Cantidad: <span class="required">*</span></label>
+                                    <input style="background-color:#E0E0E0" type="text" class="form-control form-control-sm model" id="Cantidad" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="col-sm-3">
+                                <div class="form-group mb-0">
+                                    <label for="btnAsignar" class="col-form-label col-form-label-sm invisible">Buscar:</label>
+                                    <form action="javascript:fn_agregar()" ; method="post" id="frm_usu" class="form-horizontal">
+                                        <button id="btnAgregar" type="submit" class="btn btn-sm btn-success btn-block"><i class="fa fa-plus-circle" aria-hidden="true"></i> </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table id="detalle" class="lista table">
+        <thead style="font-size:15px;">
+            <tr class="bg-white">
+                <th><font color="blue">Detalle Compra</font></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr class="bg-white">
+                <th>Codigo</th>
+                <th>Descripcion del Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+
+    </table>
+
+    <table class="table">
+        <tr style="font-size:13px;" class="bg-white">
+            <th>
+                Total
+                <input style="font-size:13px; font-weight:700;" class="form-control" type="text" name="TotalaPagar" id="TotalaPagar" required readonly />
+            </th>
+            <th>
+                Total con Iva
+                <input style="font-size:13px; font-weight:700;" class="form-control" type="text" name="TotalaPagar" id="TotalIva" required readonly />
+            </th>
+        </tr>
+        <tr>
+            <th>
+                Contrato
+                <button type="button" class="btn btn-sm btn-primary btn-block" onclick="Abrircontrato()"><i class="fa fa-search" aria-hidden="true"></i></button>
+            </th>
+            <th style="align-content:center">
+                Finalizar
+                <button type="button" class="btn btn-sm btn-success btn-block" onclick="Alerta()"><i class="fa fa-plus-circle" aria-hidden="true"></i></button>
+            </th>
+        </tr>
+    </table>
+
+    <div ondblclick="Observacion()" class="modal fade" id="contrato" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 682px!important; border:0.5px solid black" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+
+                    <table class="bg-white" style="width: 650px; padding: 10px;" border="0">
+                        <tbody>
+                            <tr>
+                                <td>
+                                </td>
+                                <td>
+                                    <table style="width: 100%; height: 120px; font-weight: bold; ">
+                                        <tr style="font-size:18px;"><td align="center">Contrato</td></tr>
+                                    </table>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+
+                            <tr style="height: 20px;"><td colspan="6"><br /></td></tr>
+                            <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+
+                            <tr>
+                                <td colspan="20">
+                                    <table style=" width: 100%; " border="0">
+                                        <tr>
+                                            <td style="width: 5%; ">Yo</td>
+                                            <td style="border-bottom:1px solid #000" , width="40%"><span id="nombreC"></span></td>
+                                            <td style="width: 55%">, quien en curso del siguiente contrato seré</td>
+                                        </tr>
+
+                                    </table>
+                                    <table style=" width: 100%; " border="0">
+                                        <tr>
+                                            <td style="width: 100%;">denominado "el Contratante" de "ML", he acordado en celebrar este contrato bajo las</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%;">siguientes cláusulas:</td>
+                                        </tr>
+                                        <tr><td> <br /></td> </tr>
+
+
+                                    </table>
+
+                                    <table style=" width: 100%; " border="0">
+                                        <tr>
+                                            <td style="width: 74%;">1.- "ML" se compromete a amenizar un evento social al contratante el</td>
+                                            <td style="border-bottom:1px solid #000" , width="20%"><span id="fechaC"></span></td>
+                                        </tr>
+
+                                    </table>
+
+                                    <table style=" width: 100%; " border="0">
+                                        <tr>
+                                            <td style="width: 25%;">en la siguiente dirección:</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border-bottom:1px solid #000" , width="100%"><span id="direccionC"></span></td>
+                                        </tr>
+
+                                    </table>
+
+                                    <table style=" width: 84%; " border="0">
+                                        <tr>
+                                            <td style="width: 40%;">2.- Teniendo como horario de inicio las </td>
+                                            <td style="border-bottom:1px solid #000" , width="10%"><span id="horaC"></span></td>
+                                            <td style="width: 18%;">Finalizando a las </td>
+                                            <td style="border-bottom:1px solid #000" , width="10%"><span id="horafinC"></span></td>
+                                        </tr>
+                                    </table>
+
+
+                                    <table style=" width: 100%; " border="0">
+                                        <tr>
+                                            <td style="width: 100%;">3.- Los Honorarios serán cancelados por el contratante una vez finalizado el compromiso</td>
+                                        </tr>
+                                    </table>
+
+                                    <table style=" width: 52%; " border="0">
+                                        <tr>
+                                            <td style="width: 42%;">siendo este contrato por un valor de </td>
+                                            <td style="border-bottom:1px solid #000" , width="10%"><span id="totalC"></span></td>
+
+                                        </tr>
+                                    </table>
+
+                                    <table style=" width: 100%; " border="0">
+                                        <tr>
+                                            <td style="width: 100%;">4.-En caso de incumplimiento de alguna de las dos partes a las disposiciones anotadas</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%;">deberá indemnizarse a la parte afectada</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%;">5.-En caso de altercados dentro del local de trabajo el contratante se obliga a brindar </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%;">protección de los productos del servicio, como al personal de "ML", esta será señal efectiva para finalizar el compromiso</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 77%;">6.-Los gastos de transporte en su totalidad seran asumidos por el contratante </td>
+                                        </tr>
+
+                                    </table>
+
+                                    <table style=" width: 100%; " border="0">
+                                        <tr>
+                                            <td style="width: 100%;">
+                                                7.- Al asumir el contratante los gastos de transporte asume
+                                                también la responsabilidad de daños a los productos alquilados en
+                                                caso de accidentes en trayectoria al mismo.
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%;">
+                                                8.- La alimentacion correrá por cuenta del contratante.
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <table style=" width: 85%; " border="0">
+                                        <tr>
+                                            <td style="width: 44%;">9.-El adelanto de este contrato será de </td>
+                                            <td style="border-bottom:1px solid #000" , width="40%"><span></span></td>
+                                        </tr>
+                                    </table>
+
+                                    <table style=" width: 100%; " border="0">
+                                        <tr>
+                                            <td style="width: 28%;">10.-OBSERVACIONES:</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="border-bottom:1px solid #000" , width="100%"><span id="observacionC"></span></td>
+                                        </tr>
+                                    </table>
+
+                                    <table style=" width: 100%; " border="0">
+                                        <tr>
+                                            <td style="width: 100%;">
+                                                En fe de lo anterior, hemos acordado firmar el presente
+                                                contrato en el km 8 de la carretera norte (ML)
+                                            </td>
+                                        </tr>
+
+                                    </table>
+
+                                    <table style=" width: 53%; " border="0">
+                                        <tr>
+                                            <td style="width: 5%;">a los </td>
+                                            <td style="border-bottom:1px solid #000" , width="10%"><span id="diaC"></span></td>
+                                            <td style="width: 10%;">del mes</td>
+                                            <td style="border-bottom:1px solid #000" , width="10%"><span id="mesC"></span></td>
+                                            <td style="width: 8%;">del 20</td>
+                                            <td style="border-bottom:1px solid #000" , width="10%"><span id="añoC"></span></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <tr style="height: 10px;"></tr>
+
+                            <tr style="height: 10px;"><td colspan="6"><br /><br /></td></tr>
+
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Agregar Cliente</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <input type="hidden" id="txtIdCliente" />
+                            <div class="form-group">
+                                <label for="Nombre">Nombre:</label>
+                                <input type="text" class="form-control" id="Nombre">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtApellido">Apellido:</label>
+                                <input type="text" class="form-control" id="txtApellido">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtCedula">Cedula:</label>
+                                <input type="text" class="form-control" id="txtCedula">
+                            </div>
+                            <div class="form-group">
+                                <label for="txtTelefono">Telefono:</label>
+                                <input type="text" class="form-control" id="txtTelefono">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-lg" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="Guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="Observacion" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="Direccion">Direccion:</label>
+                                <textarea style="color: black; font-size: 17px; width:100%; height:80px" id="Direccion"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="Observacion">Observaciones:</label>
+                                <textarea style="color: black; font-size: 17px; width:100%; height:80px" id="observacion"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-lg" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="GuardarO()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ModalCliente" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 1350px!important;" role="document">
+            <div class="modal-content">
+
+                <div class="modal-body">
+
+                    <div class="row m-4">
+                        <div class="col-sm-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <font color="blue">BUSCAR CLIENTE</font>
+                                </div>
+                                <div class="card-body">
+                                    <table class="hover" id="tbc" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th><font color="blue">ID Cliente</font> </th>
+                                                <th><font color="blue">Nombre</font></th>
+                                                <th><font color="blue">Apellido</font></th>
+                                                <th><font color="blue">Cedula</font></th>
+                                                <th><font color="blue">Telefono</font></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ModalServicios" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 1350px!important;" role="document">
+            <div class="modal-content">
+
+                <div class="modal-body">
+
+                    <div class="row m-4">
+                        <div class="col-sm-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <font color="blue">BUSCAR SERVICIO</font>
+                                </div>
+                                <div class="card-body">
+                                    <table class="hover" id="tba" style="width:100%">
+                                        <thead>
+                                            <tr>
+                                                <th><font color="blue">ID Servicio</font></th>
+                                                <th><font color="blue">Descripcion</font></th>
+                                                <th><font color="blue">Precio</font></th>
+                                                <th><font color="blue">Categoria</font></th>
+                                                <th><font color="blue">Cantidad</font></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ModalDescuento" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <center><label for="Descuento">Ingrese Descuento en cordobas:</label></center>
+                                <input type="number" class="form-control" id="Descuento">
+                                <select class="form-control" id="SDescuento">
+                                    <option value="0">0%</option>
+                                    <option value="5">5%</option>
+                                    <option value="10">10%</option>
+                                    <option value="15">15%</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-lg" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="AlertaA()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ModalRecibo" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="TI">Total con iva:</label>
+                                <input type="text" class="form-control" id="TI" readonly>
+                                <label for="Adelanto">Adelanto:</label>
+                                <input type="text" class="form-control" id="Adelanto">
+                                <select class="form-control" id="SAdelanto">
+                                    <option value="50">50%</option>
+                                    <option value="60">60%</option>
+                                    <option value="70">70%</option>
+                                    <option value="75">75%</option>
+                                    <option value="80">80%</option>
+                                    <option value="90">90%</option>
+                                    <option value="100">100%</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="Concepto">Metodo de Pago:</label>
+                                <select class="form-control" id="Smetodo">
+                                    <option value="Efectivo">En Efectivo</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Efectivo y Cheque">Efectivo y Cheque</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="Cheque" style="display: none">
+                                <label for="Banco">Banco:</label>
+                                <input type="text" class="form-control" id="Banco" value="">
+                            </div>
+
+                            <div class="form-group" id="Metodos" style="display: none">
+                                <label for="Efectivo">Pago en efectivo:</label>
+                                <input type="text" class="form-control" id="PEfec" value="0">
+                                <label for="PCheque">Pago con cheque:</label>
+                                <input type="text" class="form-control" id="PCheque" value="0">
+                            </div>
+
+
+                            <div class="form-group">
+                                <label for="Concepto">En concepto de:</label>
+                                <input type="text" class="form-control" id="Concepto">
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-lg" onclick="Alerta()">Regresar</button>
+                    <button type="button" class="btn btn-primary" onclick="Generar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ModalFin" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    Imprimir
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label>Factura:</label>
+                                <button type="button" class="btn btn-primary form-control" onclick="ImprimirF()"><i class="fa fa-print" aria-hidden="true"></i></button>
+                            </div>
+                            <div class="form-group">
+                                <label for="Observacion">Contrato:</label>
+                                <button type="button" class="btn btn-primary form-control" onclick="ImprimirO()"><i class="fa fa-print" aria-hidden="true"></i></button>
+                            </div>
+                            <div class="form-group">
+                                <label for="Observacion">Recibo:</label>
+                                <button type="button" class="btn btn-primary form-control" onclick="ImprimirR()"><i class="fa fa-print" aria-hidden="true"></i></button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="Hecho()">Finalizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="Escaner" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+               
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <center> <label>Escanee el codigo:</label></center>
+                                <input class="form-control" id="Codigo">
+                            </div>
+                            <div class="form-group">
+                            <center><img src="~/Content/Img/cedula.jpg" style="max-width:300px; max-height:300px"/></center>    
+                            </div>                           
+                        </div>
+
+                    </div>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+
